@@ -1,0 +1,4 @@
+PLATFORMS:
+    MARENOSTRUM5:
+        TYPE: SLURM
+        
