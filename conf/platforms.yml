@@ -1,3 +1,30 @@
 PLATFORMS:
-  MARENOSTRUM5:
+  MARENOSTRUM5-CPU:
     TYPE: SLURM
+    HOST: mn5-gpp
+    PROJECT: bsc32
+    USER: bsc032376
+    QUEUE: gp_debug
+    SCRATCH_DIR: /gpfs/scratch
+    FDB_DIR: /gpfs/scratch/ehpc01/experiments
+    FDB_PROD: /gpfs/projects/ehpc01/dte/fdb
+    ADD_PROJECT_TO_HOST: False
+    TEMP_DIR: ''
+    PROCESSORS_PER_NODE: 112
+    CUSTOM_DIRECTIVES: "['#SBATCH --export=ALL', '#SBATCH --hint=nomultithread']"
+    MAX_WALLCLOCK: '48:00'
+  MARENOSTRUM5-ACC:
+    TYPE: SLURM
+    HOST: mn5-acc
+    PROJECT: bsc32
+    USER: bsc032376
+    QUEUE: acc_debug
+    SCRATCH_DIR: /gpfs/scratch
+    FDB_DIR: /gpfs/scratch/ehpc01/experiments
+    FDB_PROD: /gpfs/projects/ehpc01/dte/fdb
+    ADD_PROJECT_TO_HOST: False
+    TEMP_DIR: ''
+    PROCESSORS_PER_NODE: 112
+    CUSTOM_DIRECTIVES: "['#SBATCH --export=ALL', '#SBATCH --hint=nomultithread']"
+    MAX_WALLCLOCK: '48:00'
+
