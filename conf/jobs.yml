@@ -1,7 +1,7 @@
 JOBS:
-    PREPARE_ICS:
-        FILE: tempaltes/prepare_ics.yml
-        PLATFORM: %DEFAULT.HPCARC%
-    SIM:
-        FILE: tempaltes/sim.yml
-        PLATFORM: %DEFAULT.HPCARC%
+  PREPARE_ICS:
+    FILE: tempaltes/prepare_ics.yml
+    PLATFORM: "%DEFAULT.HPCARCH%"
+  SIM:
+    FILE: tempaltes/sim.yml
+    PLATFORM: "%DEFAULT.HPCARCH%"

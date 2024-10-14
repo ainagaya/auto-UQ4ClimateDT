@@ -1,21 +1,22 @@
 experiment:
-    # Supply the list of start dates. Available formats: YYYYMMDD YYYYMMDDhh YYYYMMDDhhmm
-    # Also you can use an abbreviated syntax for multiple dates with common parts:
-    # 200001[01 15] <=> 20000101 20000115
-    # DATELIST: 19600101 19650101 19700101
-    # DATELIST: 1960[0101 0201 0301]
-    DATELIST: 20350923
-    # Supply the list of members. LIST: fc0 fc1 fc2 fc3 fc4
-    MEMBERS: fc0
-    # Chunk size unit. STRING: hour, day, month, year
-    CHUNKSIZEUNIT: day
-    # Chunk size. NUMERIC: 4, 6, 12
-    CHUNKSIZE: 1
-    # Total number of chunks in experiment. NUMERIC: 30, 15, 10
-    NUMCHUNKS: 2
-    # Calendar used. LIST: standard, noleap
-    CALENDAR: standard
-
+  # Supply the list of start dates.
+  # Available formats: YYYYMMDD YYYYMMDDhh YYYYMMDDhhmm
+  # Also you can use an abbreviated syntax for
+  # multiple dates with common parts:
+  # 200001[01 15] <=> 20000101 20000115
+  # DATELIST: 19600101 19650101 19700101
+  # DATELIST: 1960[0101 0201 0301]
+  DATELIST: 20350923
+  # Supply the list of members. LIST: fc0 fc1 fc2 fc3 fc4
+  MEMBERS: fc0
+  # Chunk size unit. STRING: hour, day, month, year
+  CHUNKSIZEUNIT: day
+  # Chunk size. NUMERIC: 4, 6, 12
+  CHUNKSIZE: 1
+  # Total number of chunks in experiment. NUMERIC: 30, 15, 10
+  NUMCHUNKS: 2
+  # Calendar used. LIST: standard, noleap
+  CALENDAR: standard
 REQUEST:
   ACTIVITY: "ScenarioMIP"
   EXPERIMENT: "SSP3-7.0"

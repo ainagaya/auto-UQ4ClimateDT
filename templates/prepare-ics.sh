@@ -14,7 +14,7 @@ conda
 
 # -------------------------------------------------------------------------------------------------------------------- #
 mkdir -p ${OUTDIR}
-cd ${OUTDIR} 
+cd ${OUTDIR}
 
 export ECCODES_DEFINITION_PATH=${BUNDLEDIR}/source/eccodes/definitions
 
