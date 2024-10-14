@@ -10,9 +10,8 @@ SOURCESTREAM=regularll
 BUNDLEDIR=%DIRS.BUNDLE_DIR%
 SUBCENTRE=1003
 
-conda
+conda activate ai-models
 
-# -------------------------------------------------------------------------------------------------------------------- #
 mkdir -p ${OUTDIR}
 cd ${OUTDIR}
 
