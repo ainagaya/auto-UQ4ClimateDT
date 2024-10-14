@@ -2,6 +2,9 @@ JOBS:
   PREPARE_ICS:
     FILE: tempaltes/prepare_ics.yml
     PLATFORM: "%DEFAULT.HPCARCH%"
+    RUNNING: CHUNK
   SIM:
     FILE: tempaltes/sim.yml
     PLATFORM: "%DEFAULT.HPCARCH%"
+    DEPENDECIES: PREPARE_ICS
+    RUNNING: CHUNK
