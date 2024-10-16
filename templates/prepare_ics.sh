@@ -95,4 +95,4 @@ retrieve,
   packing=simple
 EOF
 
-${BINDIR}/fdb-read --raw mars_${LEVTYPE}_${DATE}_${TIME} ${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib
+${BINDIR}/fdb-read --raw mars_${LEVTYPE}_${DATE}_${TIME} ${INPDIR}/${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib

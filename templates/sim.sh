@@ -44,4 +44,4 @@ conda activate ai-models
 mkdir -p $OUTDIR
 cd $OUTDIR
 
-ai-models --file ${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib --path ${OUTDIR}/${AI_MODEL}-${DATE}-${TIME}.grib ${AI_MODEL}
+ai-models --file ${INPDIR}/${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib --path ${OUTDIR}/${AI_MODEL}-${DATE}-${TIME}.grib ${AI_MODEL}

@@ -18,6 +18,8 @@ experiment:
   # Calendar used. LIST: standard, noleap
   CALENDAR: standard
 REQUEST:
+  CLASS: "d1"
+  DATASET: "climate-dt"
   ACTIVITY: "ScenarioMIP"
   EXPERIMENT: "SSP3-7.0"
   GENERATION: 1
