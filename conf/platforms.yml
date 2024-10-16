@@ -1,5 +1,5 @@
 PLATFORMS:
-  MARENOSTRUM5-CPU:
+  MARENOSTRUM5CPU:
     #TYPE: SLURM
     TYPE: ps
     HOST: mn5-gpp
@@ -14,7 +14,7 @@ PLATFORMS:
     PROCESSORS_PER_NODE: 112
     CUSTOM_DIRECTIVES: "['#SBATCH --export=ALL', '#SBATCH --hint=nomultithread']"
     MAX_WALLCLOCK: '00:30'
-  MARENOSTRUM5-ACC:
+  MARENOSTRUM5ACC:
     #TYPE: SLURM
     TYPE: ps
     HOST: mn5-acc

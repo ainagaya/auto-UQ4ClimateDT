@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# SIM
-
-DATE=%CHUNK_START_DATE%
-TIME=%CHUNK_START_HOUR%
-INPDIR=%DIRS.INPUT_DIR%
-OUTDIR=%DIRS.OUTPUT_DIR%
-
-# Request keys
-LEVTYPE=%REQUEST.LEVTYPE%
-
-AI_MODEL=%AI_MODEL%
-
 #####################################################
 # Initializes conda
 # Globals:
@@ -38,10 +26,3 @@ function conda_init() {
 
 }
 
-conda_init
-conda activate ai-models
-
-mkdir -p $OUTDIR
-cd $OUTDIR
-
-ai-models --file ${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib --path ${OUTDIR}/${AI_MODEL}-${DATE}-${TIME}.grib ${AI_MODEL}

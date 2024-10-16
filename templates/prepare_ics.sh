@@ -2,6 +2,7 @@
 
 # PREPARE-ICS
 
+HPCROOTDIR=%HPCROOTDIR%
 DATE=%CHUNK_START_DATE%
 TIME=%CHUNK_START_HOUR%
 INPDIR=%DIRS.INPUT_DIR%
@@ -10,10 +11,55 @@ SOURCESTREAM=regularll
 BUNDLEDIR=%DIRS.BUNDLE_DIR%
 SUBCENTRE=1003
 
+# Request keys
+CLASS=%REQUEST.CLASS%
+DATASET=%REQUEST.DATASET%
+ACTIVITY=%REQUEST.ACTIVITY%
+EXPERIMENT=%REQUEST.EXPERIMENT%
+GENERATION=%REQUEST.GENERATION%
+MODEL=%REQUEST.MODEL%
+REALIZATION=%REQUEST.REALIZATION%
+RESOLUTION=%REQUEST.RESOLUTION%
+EXPVER=%REQUEST.EXPVER%
+TYPE=%REQUEST.TYPE%
+STREAM=%REQUEST.STREAM%
+LEVTYPE=%REQUEST.LEVTYPE%
+
+## AI-MODEL
+AI_MODEL=%AI_MODEL%
+
+
+#####################################################
+# Initializes conda
+# Globals:
+#
+# Arguments:
+#
+#####################################################
+function conda_init() {
+    set +xuve
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    __conda_setup="$('/apps/GPP/ANACONDA/2023.07/bin/conda' 'shell.bash' 'hook' 2>/dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "/apps/GPP/ANACONDA/2023.07/etc/profile.d/conda.sh" ]; then
+            . "/apps/GPP/ANACONDA/2023.07/etc/profile.d/conda.sh"
+        else
+            export PATH="/apps/GPP/ANACONDA/2023.07/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+    set -xuve
+
+}
+
+conda_init
 conda activate ai-models
 
-mkdir -p ${OUTDIR}
-cd ${OUTDIR}
+mkdir -p ${INPDIR}
+cd ${INPDIR}
 
 export ECCODES_DEFINITION_PATH=${BUNDLEDIR}/source/eccodes/definitions
 
@@ -26,19 +72,19 @@ VAR2D=228
 
 cat<<EOF >mars_sfc_${DATE}_${TIME}
 retrieve,
-  class=d1,
-  dataset=climate-dt,
-  activity=ScenarioMIP,
-  experiment=SSP3-7.0,
-  generation=1,
-  model=IFS-FESOM,
-  realization=1,
-  resolution=standard,
-  expver=hz9o,
-  type=fc,
-  stream=clte,
-  levtype=sfc,
-  target=graphcast_sfc_tp_${DATE}_${TIME}.grib,
+  class=${CLASS},
+  dataset=${DATASET},
+  activity=${ACTIVITY},
+  experiment=${EXPERIMENT},
+  generation=${GENERATION},
+  model=${MODEL},
+  realization=${REALIZATION},
+  resolution=${RESOLUTION},
+  expver=${EXPVER},
+  type=${TYPE},
+  stream=${STREAM},
+  levtype=${LEVTYPE},
+  target=${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib,
   param=${VAR2D},
   date=${DATE},
   time=${TIME},
@@ -49,4 +95,4 @@ retrieve,
   packing=simple
 EOF
 
-${BINDIR}/fdb-read --raw mars_sfc_${DATE}_${TIME} graphcast_sfc_tp_${DATE}_${TIME}.grib
+${BINDIR}/fdb-read --raw mars_${LEVTYPE}_${DATE}_${TIME} ${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib
