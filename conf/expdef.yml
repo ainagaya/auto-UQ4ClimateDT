@@ -30,7 +30,6 @@ REQUEST:
   TYPE: fc
   STREAM: clte
   LEVTYPE: sfc
-  TARGET: graphcast_sfc_tp.grib
   REPRES: GG
   DOMAIN: G
   RESOL: AUTO
