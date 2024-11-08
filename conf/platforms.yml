@@ -15,8 +15,8 @@ PLATFORMS:
     CUSTOM_DIRECTIVES: "['#SBATCH --export=ALL', '#SBATCH --hint=nomultithread']"
     MAX_WALLCLOCK: '00:30'
   MARENOSTRUM5ACC:
-    #TYPE: SLURM
-    TYPE: ps
+    TYPE: SLURM
+    #TYPE: ps
     HOST: mn5-acc
     PROJECT: bsc32
     USER: bsc032376

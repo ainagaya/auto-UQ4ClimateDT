@@ -11,6 +11,7 @@ OUTDIR=%DIRS.OUTPUT_DIR%
 LEVTYPE=%REQUEST.LEVTYPE%
 
 AI_MODEL=%AI_MODEL%
+AI_CHECKPOINT=%AI_CHECKPOINT%
 
 #####################################################
 # Initializes conda
@@ -39,9 +40,18 @@ function conda_init() {
 }
 
 conda_init
-conda activate ai-models
+#conda activate ai-models
+conda activate /gpfs/projects/bsc32/ml_models/emulator_models/ecmwf_ai_models/wf_emulator_snake_2
+
 
 mkdir -p $OUTDIR
 cd $OUTDIR
 
-ai-models --file ${INPDIR}/${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib --path ${OUTDIR}/${AI_MODEL}-${DATE}-${TIME}.grib ${AI_MODEL}
+#ai-models --debug --input file --output file \
+#--file ${INPDIR}/${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib \
+#--path ${OUTDIR}/${AI_MODEL}-${DATE}-${TIME}.grib --time 0600 \
+#--lead-time 360 ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
+
+ai-models --input file --file /gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/example-input-aifs021.grib \
+ --output file --time 0600 --date 20240808 --path test_output.grib --lead-time 360 anemoi \
+ --checkpoint /gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/inference-aifs-0.2.1-anemoi.ckpt
