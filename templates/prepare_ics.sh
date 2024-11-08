@@ -23,10 +23,10 @@ RESOLUTION=%REQUEST.RESOLUTION%
 EXPVER=%REQUEST.EXPVER%
 TYPE=%REQUEST.TYPE%
 STREAM=%REQUEST.STREAM%
-LEVTYPE=%REQUEST.LEVTYPE%
 
 ## AI-MODEL
 AI_MODEL=%AI_MODEL%
+AI_CHECKPOINT=%AI_CHECKPOINT%
 
 
 #####################################################
@@ -56,10 +56,7 @@ function conda_init() {
 }
 
 conda_init
-conda activate ai-models
-
-mkdir -p ${INPDIR}
-cd ${INPDIR}
+conda activate /gpfs/projects/bsc32/ml_models/emulator_models/ecmwf_ai_models/wf_emulator_snake_2
 
 export ECCODES_DEFINITION_PATH=${BUNDLEDIR}/source/eccodes/definitions
 
@@ -68,31 +65,50 @@ export FDB_HOME=${FDB_PATH}/${SOURCESTREAM}
 BINDIR=${BUNDLEDIR}/build/bin/
 ${BINDIR}/fdb-info --all
 
-VAR2D=228
+mkdir -p ${INPDIR}
+cd ${INPDIR}
 
-cat<<EOF >mars_sfc_${DATE}_${TIME}
+ai-models ${AI_MODEL} --retrieve-requests --checkpoint ${AI_CHECKPOINT} > ${INPDIR}/retrieve_requests.txt
+# Read retrieve_requests.txt and process each block
+awk -v RS= '{print > "mars_" NR ".txt"}' ${INPDIR}/retrieve_requests.txt
+
+# Process each generated file
+for file in ${INPDIR}/mars_*.txt; do
+    levelist=$(awk -F= '/levelist/ {gsub(/,/, "", $2); print $2}' $file)
+    levtype=$(awk -F= '/levtype/ {gsub(/,/, "", $2); print $2}' $file)
+    param=$(awk -F= '/param/ {gsub(/,/, "", $2); print $2}' $file)
+
+    file_num=$(echo $file | awk -F_ '{print $2}' | awk -F. '{print $1}')
+    
+    cat <<EOF > ${INPDIR}/request_${file_num}
 retrieve,
-  class=${CLASS},
-  dataset=${DATASET},
-  activity=${ACTIVITY},
-  experiment=${EXPERIMENT},
-  generation=${GENERATION},
-  model=${MODEL},
-  realization=${REALIZATION},
-  resolution=${RESOLUTION},
-  expver=${EXPVER},
-  type=${TYPE},
-  stream=${STREAM},
-  levtype=${LEVTYPE},
-  target=${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib,
-  param=${VAR2D},
-  date=${DATE},
-  time=${TIME},
-  repres=GG,
-  domain=G,
-  resol=AUTO,
-  area=90.0/0.0/-90.0/360.0,
-  packing=simple
+   database=latlon,
+   class=${CLASS},
+   dataset=${DATASET},
+   activity=${ACTIVITY},
+   experiment=${EXPERIMENT},
+   levelist=${levelist},
+   levtype=${levtype},
+   param=${param},
+   generation=${GENERATION},
+   model=${MODEL},
+   realization=${REALIZATION},
+   resolution=${RESOLUTION},
+   expver=${EXPVER},
+   type=${TYPE},
+   stream=${STREAM},
+   target=${AI_MODEL}_${levtype}_${DATE}_${TIME}_${file_num}.grib,
+   date=${DATE},
+   time=${TIME},
+   repres=GG,
+   domain=G,
+   resol=AUTO,
+   packing=simple
 EOF
+    /gpfs/projects/ehpc01/dte/bin/mars ${INPDIR}/request_${file_num}
+done
 
-${BINDIR}/fdb-read --raw mars_${LEVTYPE}_${DATE}_${TIME} ${INPDIR}/${AI_MODEL}_${LEVTYPE}_tp_${DATE}_${TIME}.grib
+## TO-DO: I NEED THE GRIBFILES WITH -6 HOURS DELAY
+
+# Merge all the files
+cat ${INPDIR}/${AI_MODEL}_*_${DATE}_${TIME}_*.grib > ${INPDIR}/${AI_MODEL}_${DATE}_${TIME}.grib

@@ -14,7 +14,7 @@ experiment:
   # Chunk size. NUMERIC: 4, 6, 12
   CHUNKSIZE: 1
   # Total number of chunks in experiment. NUMERIC: 30, 15, 10
-  NUMCHUNKS: 2
+  NUMCHUNKS: 1
   # Calendar used. LIST: standard, noleap
   CALENDAR: standard
 REQUEST:
@@ -29,7 +29,6 @@ REQUEST:
   EXPVER: "0001"
   TYPE: fc
   STREAM: clte
-  LEVTYPE: sfc
   REPRES: GG
   DOMAIN: G
   RESOL: AUTO

@@ -26,7 +26,7 @@ PLATFORMS:
     FDB_PROD: /gpfs/projects/ehpc01/dte/fdb
     ADD_PROJECT_TO_HOST: False
     TEMP_DIR: ''
-    PROCESSORS_PER_NODE: 112
+    PROCESSORS_PER_NODE: 80
     CUSTOM_DIRECTIVES: "['#SBATCH --export=ALL', '#SBATCH --hint=nomultithread']"
     MAX_WALLCLOCK: '00:30'
 
