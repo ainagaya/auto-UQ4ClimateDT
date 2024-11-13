@@ -48,8 +48,8 @@ mkdir -p $OUTDIR
 cd $OUTDIR
 
 ai-models --debug --input file --output file \
---file ${INPDIR}/${AI_MODEL}_${DATE}_${TIME}.grib \
---path ${OUTDIR}/${AI_MODEL}-${DATE}-${TIME}.grib --time 0600 \
+--file ${INPDIR}/${AI_MODEL}_${DATE:0:8}_${TIME}.grib \
+--path ${OUTDIR}/${AI_MODEL}-${DATE:0:8}-${TIME}.grib --time 0600 \
 --lead-time 360 ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
 
 #ai-models --input file --file /gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/example-input-aifs021.grib \

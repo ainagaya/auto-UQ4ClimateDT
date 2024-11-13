@@ -97,9 +97,9 @@ retrieve,
    expver=${EXPVER},
    type=${TYPE},
    stream=${STREAM},
-   target=${AI_MODEL}_${levtype}_${DATE}_${TIME}_${file_num}.grib,
-   date=${DATE},
-   time=${TIME},
+   target=${AI_MODEL}_${levtype}_${DATE:0:8}_${TIME}_${file_num}.grib,
+   date=${DATE:0:8},
+   time=${TIME}/$((TIME-6)),
    repres=GG,
    domain=G,
    resol=AUTO,
@@ -108,7 +108,13 @@ EOF
     /gpfs/projects/ehpc01/dte/bin/mars ${INPDIR}/request_${file_num}
 done
 
-## TO-DO: I NEED THE GRIBFILES WITH -6 HOURS DELAY
+## Need to duplicate z and lsm to time 0600
+for file in ${INPDIR}/${AI_MODEL}_*_${DATE:0:8}_${TIME}_*.grib; do
+    grib_copy -w param=172 $file ${file}_lsm
+    grib_copy -w param=129 $file ${file}_z
+    grib_set -s time="${TIME}" "${file}_lsm" ${file}_lsm_0600
+    grib_set -s time="${TIME}" "${file}_z" ${file}_z_0600
+done
 
 # Merge all the files
-cat ${INPDIR}/${AI_MODEL}_*_${DATE}_${TIME}_*.grib > ${INPDIR}/${AI_MODEL}_${DATE}_${TIME}.grib
+cat ${INPDIR}/${AI_MODEL}_*_${DATE:0:8}_${TIME}_*.grib > ${INPDIR}/${AI_MODEL}_${DATE:0:8}_${TIME}.grib
