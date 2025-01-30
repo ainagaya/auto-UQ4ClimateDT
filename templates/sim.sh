@@ -2,8 +2,11 @@
 
 # SIM
 
-DATE=%CHUNK_START_DATE%
-TIME=%CHUNK_START_HOUR%
+START_DATE=%CHUNK_START_DATE%
+START_TIME=%CHUNK_START_HOUR%
+END_DATE=%CHUNK_END_DATE%
+END_TIME=%CHUNK_END_HOUR%
+
 INPDIR=%DIRS.INPUT_DIR%
 OUTDIR=%DIRS.OUTPUT_DIR%
 
@@ -12,6 +15,12 @@ LEVTYPE=%REQUEST.LEVTYPE%
 
 AI_MODEL=%AI_MODEL%
 AI_CHECKPOINT=%AI_CHECKPOINT%
+INPUT_TYPE=%INPUT_TYPE%
+
+ERA5_PATH=%GENERAL.ERA5_PATH%
+
+MEMBER=%MEMBER%
+RUN_DAYS=%RUN_DAYS%
 
 #####################################################
 # Initializes conda
@@ -42,15 +51,37 @@ function conda_init() {
 conda_init
 #conda activate ai-models
 conda activate /gpfs/projects/bsc32/ml_models/emulator_models/ecmwf_ai_models/wf_emulator_snake_2
-
-
+#conda activate /gpfs/scratch/bsc32/bsc032376/climate-emulators/env/wf_emulator_snake_2
+module use /gpfs/projects/bsc32/software/rhel/9.2/modules/all
+module load CDO
 mkdir -p $OUTDIR
 cd $OUTDIR
 
-ai-models --debug --input file --output file \
---file ${INPDIR}/${AI_MODEL}_${DATE:0:8}_${TIME}.grib \
---path ${OUTDIR}/${AI_MODEL}-${DATE:0:8}-${TIME}.grib --time 0600 \
---lead-time 360 ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
+TARGETNGRID=320
+
+if [ ${AI_MODEL,,} == "aifs" ]; then
+    AI_MODEL_RUN="anemoi"
+else
+    AI_MODEL_RUN=${AI_MODEL}
+fi
+
+LEAD_TIME=$(( $RUN_DAYS * 24 ))
+
+if [ ${INPUT_TYPE,,} == "fdb" ]; then
+    ai-models --debug --input file --output file \
+    --file ${INPDIR}/${AI_MODEL}_${START_DATE:0:8}_${START_TIME}_N${TARGETNGRID}.grib \
+    --path ${OUTDIR}/${AI_MODEL}-${START_DATE:0:8}-${START_TIME}.grib --time 0600 \
+    --lead-time ${LEAD_TIME} ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
+elif [ ${INPUT_TYPE,,} == "era5_grib" ]; then
+    file_format=grib
+    ai-models --input file --file "${INPDIR}/${AI_MODEL}_${START_DATE}_${END_DATE}.${file_format}" \
+    --output file --path ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}.grib \
+    --lead_time ${LEAD_TIME} --date ${START_DATE} --time ${START_TIME} \
+    ${AI_MODEL_RUN} --checkpoint ${AI_CHECKPOINT}
+else
+    export PATH=/gpfs/projects/ehpc01/dte/bin:$PATH
+    ai-models --input cds --date ${START_DATE} --time ${TIME} ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
+fi
 
 #ai-models --input file --file /gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/example-input-aifs021.grib \
 # --output file --time 0600 --date 20240808 --path test_output.grib --lead-time 360 anemoi \

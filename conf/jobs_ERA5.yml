@@ -1,0 +1,17 @@
+JOBS:
+  PREPARE_ICS:
+    FILE: templates/prepare_ics_ERA5.sh
+    PLATFORM: "%DEFAULT.HPCARCH%"
+    RUNNING: CHUNK
+  SIM:
+    FILE: templates/sim.sh
+    PLATFORM: "MARENOSTRUM5ACC"
+    DEPENDECIES: SIM-1
+    RUNNING: CHUNK
+    NODES: 1
+    PROCESSORS: 80
+  POSTPROCESS:
+    FILE: templates/postprocess.sh
+    PLATFORM: "%DEFAULT.HPCARCH%"
+    DEPENDECIES: SIM-1
+    RUNNING: CHUNK

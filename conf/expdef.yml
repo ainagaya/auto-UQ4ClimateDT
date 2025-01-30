@@ -6,15 +6,16 @@ experiment:
   # 200001[01 15] <=> 20000101 20000115
   # DATELIST: 19600101 19650101 19700101
   # DATELIST: 1960[0101 0201 0301]
-  DATELIST: 2035092306
+  #DATELIST: 2035092306
+  DATELIST: 20230106
   # Supply the list of members. LIST: fc0 fc1 fc2 fc3 fc4
-  MEMBERS: fc0
+  MEMBERS: fc0 fc1
   # Chunk size unit. STRING: hour, day, month, year
   CHUNKSIZEUNIT: day
   # Chunk size. NUMERIC: 4, 6, 12
-  CHUNKSIZE: 1
+  CHUNKSIZE: 10
   # Total number of chunks in experiment. NUMERIC: 30, 15, 10
-  NUMCHUNKS: 1
+  NUMCHUNKS: 2
   # Calendar used. LIST: standard, noleap
   CALENDAR: standard
 REQUEST:
@@ -35,5 +36,6 @@ REQUEST:
   area: "90.0/0.0/-90.0/360.0"
   packing: "simple"
 
-AI_MODEL: "anemoi"
+AI_MODEL: "aifs"
 AI_CHECKPOINT: "/gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/inference-aifs-0.2.1-anemoi.ckpt"
+INPUT_TYPE: "era5_grib"

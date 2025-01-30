@@ -1,0 +1,7 @@
+DEFAULT:
+  CUSTOM_CONFIG:
+    PRE:
+      - "%PROJDIR%/conf/platforms.yml"
+      - "%PROJDIR%/conf/expdef.yml"
+      - "%PROJDIR%/conf/jobs_%INPUT%.yml"
+      - "%PROJDIR%/conf/general.yml"
