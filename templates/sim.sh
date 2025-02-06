@@ -22,6 +22,33 @@ ERA5_PATH=%GENERAL.ERA5_PATH%
 MEMBER=%MEMBER%
 RUN_DAYS=%RUN_DAYS%
 
+YYYY=${START_DATE:0:4}
+
+# Request keys
+CLASS=%REQUEST.CLASS%
+DATASET=%REQUEST.DATASET%
+ACTIVITY=%REQUEST.ACTIVITY%
+EXPERIMENT=%REQUEST.EXPERIMENT%
+GENERATION=%REQUEST.GENERATION%
+MODEL=%REQUEST.MODEL%
+REALIZATION=%REQUEST.REALIZATION%
+RESOLUTION=%REQUEST.RESOLUTION%
+EXPVER=%REQUEST.EXPVER%
+TYPE=%REQUEST.TYPE%
+STREAM=%REQUEST.STREAM%
+
+TIME1=%CHUNK_START_HOUR%
+TIME2=$(( TIME1 + 6 ))
+
+TIME1=${TIME1}00
+TIME2=${TIME2}00
+
+TIME="${TIME1}/${TIME2}"
+
+# keep only the 8 first characters of the date
+START_DATE=${START_DATE:0:8}
+END_DATE=${END_DATE:0:8}
+
 #####################################################
 # Initializes conda
 # Globals:
@@ -69,9 +96,9 @@ LEAD_TIME=$(( $RUN_DAYS * 24 ))
 
 if [ ${INPUT_TYPE,,} == "fdb" ]; then
     ai-models --debug --input file --output file \
-    --file ${INPDIR}/${AI_MODEL}_${START_DATE:0:8}_${START_TIME}_N${TARGETNGRID}.grib \
+    --file ${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1 \
     --path ${OUTDIR}/${AI_MODEL}-${START_DATE:0:8}-${START_TIME}.grib --time 0600 \
-    --lead-time ${LEAD_TIME} ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
+    --lead-time ${LEAD_TIME} anemoi --checkpoint ${AI_CHECKPOINT}
 elif [ ${INPUT_TYPE,,} == "era5_grib" ]; then
     file_format=grib
     ai-models --input file --file "${INPDIR}/${AI_MODEL}_${START_DATE}_${END_DATE}.${file_format}" \

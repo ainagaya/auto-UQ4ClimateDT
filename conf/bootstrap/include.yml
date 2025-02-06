@@ -5,3 +5,4 @@ DEFAULT:
       - "%PROJDIR%/conf/expdef.yml"
       - "%PROJDIR%/conf/jobs_%INPUT%.yml"
       - "%PROJDIR%/conf/general.yml"
+      - "%PROJDIR%/conf/models/aifs.yaml"

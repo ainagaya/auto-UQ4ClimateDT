@@ -1,4 +1,8 @@
 JOBS:
+  SYNCHRONIZE:
+    FILE: templates/synchronize.sh
+    PLATFORM: local
+    RUNNING: once
   PREPARE_ICS:
     FILE: templates/prepare_ics.sh
     PLATFORM: "%DEFAULT.HPCARCH%"
