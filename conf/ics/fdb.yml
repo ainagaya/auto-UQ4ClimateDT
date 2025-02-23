@@ -1,0 +1,5 @@
+JOBS:
+  PREPARE_ICS:
+    FILE: templates/prepare_ics_fdb.sh
+    PLATFORM: "%DEFAULT.HPCARCH%"
+    RUNNING: CHUNK

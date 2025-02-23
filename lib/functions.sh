@@ -93,20 +93,38 @@ combine_and_remap() {
     ${BINDIR}/grib_copy -B'level:i asc' aifs_sfc.grib aifs_tcw.grib aifs_pl.grib combined_${SOURCESTREAM}.grib
     rm aifs_sfc.grib aifs_tcw.grib aifs_pl.grib
 
-    ${BINDIR}/mir --reduced=${TARGETNGRID} combined_${SOURCESTREAM}.grib aifs_combined_N${TARGETNGRID}.grib
+    TARGETGRID_NUMERICAL=$(echo ${TARGETGRID} | sed 's/[^0-9]*//g')
+    GRIDTYPE=$(echo ${TARGETGRID} | cut -c1)
+
+    if [ ${GRIDTYPE} == "N" ]; then
+        GRIDTYPE="reduced"
+    elif [ ${GRIDTYPE} == "O" ]; then
+        GRIDTYPE="octahedral"
+    fi
+
+    case ${GRIDTYPE} in
+      "reduced" | "octahedral")
+      ${BINDIR}/mir --${GRIDTYPE}=${TARGETGRID_NUMERICAL} combined_${SOURCESTREAM}.grib aifs_combined_${TARGETGRID}.grib
+      ;;
+      *)
+      echo "Unknown GRIDTYPE: ${GRIDTYPE}"
+      exit 1
+      ;;
+    esac
+
     mv combined_${SOURCESTREAM}.grib aimodels-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2
 }
 
 add_subgrid_info() {
     local DATE=$1
-    ${BINDIR}/grib_set -s date=${DATE},time=${TIME1},subCentre=${SUBCENTRE} ${SCRDIR}/aifs_lsm_slor_sdor_z.N${TARGETNGRID}.grib2 aifs_external.N${TARGETNGRID}_1.grib
-    ${BINDIR}/grib_set -s date=${DATE},time=${TIME2},subCentre=${SUBCENTRE} ${SCRDIR}/aifs_lsm_slor_sdor_z.N${TARGETNGRID}.grib2 aifs_external.N${TARGETNGRID}_2.grib
+    ${BINDIR}/grib_set -s date=${DATE},time=${TIME1},subCentre=${SUBCENTRE} ${SCRDIR}/aifs_lsm_slor_sdor_z.${TARGETGRID}.grib2 aifs_external.${TARGETGRID}_1.grib
+    ${BINDIR}/grib_set -s date=${DATE},time=${TIME2},subCentre=${SUBCENTRE} ${SCRDIR}/aifs_lsm_slor_sdor_z.${TARGETGRID}.grib2 aifs_external.${TARGETGRID}_2.grib
 }
 
 create_final_output() {
     local DATE=$1
-    ${BINDIR}/grib_copy -B'level:i asc' aifs_combined_N${TARGETNGRID}.grib aifs_external.N${TARGETNGRID}_1.grib aifs_external.N${TARGETNGRID}_2.grib aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2
-    rm aifs_external.N${TARGETNGRID}_1.grib aifs_external.N${TARGETNGRID}_2.grib aifs_combined_N${TARGETNGRID}.grib
+    ${BINDIR}/grib_copy -B'level:i asc' aifs_combined_${TARGETGRID}.grib aifs_external.${TARGETGRID}_1.grib aifs_external.${TARGETGRID}_2.grib aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2
+    rm aifs_external.${TARGETGRID}_1.grib aifs_external.${TARGETGRID}_2.grib aifs_combined_${TARGETGRID}.grib
 
     ${BINDIR}/grib_set -s edition=1 aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2 aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib1
     rm aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2

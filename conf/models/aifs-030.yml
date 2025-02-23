@@ -1,0 +1,11 @@
+
+# Variables
+# ---------
+VARIABLES:
+  VAR2D: "165/166/167/151" # Surface variables: 10u, 10v, 2t, msl, z
+  VAR3D: "129/133/130/131/132/135"     # Pressure level variables: z, q, t, u, v, w
+  PLEVELS: "1000/925/850/700/600/500/400/300/250/200/150/100/50"
+  TARGETGRID: "O96"
+MODEL:
+  CHECKPOINT: "/gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/inference-aifs-0.3.0-anemoi.ckpt"
+  DELAY: 12

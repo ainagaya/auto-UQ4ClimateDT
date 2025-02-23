@@ -1,0 +1,20 @@
+
+# Variables
+# ---------
+VARIABLES:
+  VAR2D: "263101/263001" # Surface variables: time-mean sea surface temperature, sea_ice_cover
+  VAR3D: "129/133/130/131/132/235088/246"     # Pressure level variables: z, q, t, u, v, time-mean total column cloud ice water (should be specific cloud ice water content)
+  PLEVELS: "1000/925/850/700/600/500/400/300/250/200/150/100/50"
+  TARGETGRID: "N320" # Horizontal regridding to a Gaussian grid. For processing fine-resolution data conservative regridding is most appropriate 
+MODEL:
+  #@param ['v1/deterministic_0_7_deg.pkl', 'v1/deterministic_1_4_deg.pkl', 'v1/deterministic_2_8_deg.pkl', 'v1/stochastic_1_4_deg.pkl', 'v1_precip/stochastic_precip_2_8_deg.pkl', 'v1_precip/stochastic_evap_2_8_deg'] {type: "string"}
+  CHECKPOINT: "/gpfs/scratch/bsc32/bsc032376/tfm/deterministic_2_8_deg.pkl"
+
+JOBS:
+  SIM:
+    FILE: templates/sim_neuralgcm.py
+    PLATFORM: "MARENOSTRUM5ACC"
+    DEPENDECIES: SIM-1
+    RUNNING: CHUNK
+    NODES: 1
+    PROCESSORS: 80

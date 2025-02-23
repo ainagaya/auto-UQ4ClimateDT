@@ -1,5 +1,5 @@
 DIRS:
-  INPUT_DIR: "%HPCROOTDIR%/%AI_MODEL%"
+  INPUT_DIR: "%HPCROOTDIR%/%MODEL.NAME%"
   OUTPUT_DIR: "%HPCROOTDIR%/output"
   BUNDLE_DIR: "/gpfs/projects/ehpc01/models/ifs-nemo/DE_CY48R1.0_climateDT_20240523/make/marenostrum5-intel"
   FDB_PATH: "%CURRENT_FDB_PROD%" 
@@ -7,3 +7,9 @@ DIRS:
 
 POSTPROCESS:
   PERIOD: 240
+
+JOBS:
+  SYNCHRONIZE:
+    FILE: templates/synchronize.sh
+    PLATFORM: local
+    RUNNING: once
