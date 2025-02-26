@@ -9,8 +9,39 @@ from dinosaur import spherical_harmonic
 from dinosaur import xarray_utils
 import neuralgcm
 
+import argparse
+import yaml
 
-model_checkpoint = "%NEURALGCM.CHECKPOINT%"
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Run NeuralGCM model')
+    parser.add_argument('--config', '-c', type=str, default='config_neuralgcm.yaml',
+                        help='Path to the config file')
+    return parser.parse_args()
+
+def read_config(config_path):
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+    
+def validate_config(config):
+    required_keys = ['model_checkpoint', 'era5_path', 'start_time', 'end_time', 'data_inner_steps', 'inner_steps']
+    for key in required_keys:
+        if key not in config:
+            raise ValueError(f'Key {key} is missing from the config file')
+    
+def define_variables(config):
+    model_checkpoint = config['model_checkpoint']
+    era5_path = config['era5_path']
+    start_time = config['start_time']
+    end_time = config['end_time']
+    data_inner_steps = config['data_inner_steps']
+    inner_steps = config['inner_steps']
+    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps
+
+args = parse_arguments()
+config = read_config(args.config)
+validate_config(config)
+model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps = define_variables(config)
 
 print("imported everything")
 
@@ -25,16 +56,8 @@ model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
 
 print("Defined model")
 
-era5_path = "/gpfs/scratch/bsc32/bsc032376/tfm/era5.zarr"
 eval_era5 = xarray.open_zarr(era5_path, chunks=None)
 
-## M'ho puc baixar
-
-demo_start_time = '2020-02-14'
-demo_end_time = '2020-02-18'
-data_inner_steps = 24  # process every 24th hour
-
-inner_steps = 24  # save model outputs once every 24 hours
 outer_steps = 4 * 24 // inner_steps  # total of 4 days
 timedelta = np.timedelta64(1, 'h') * inner_steps
 times = (np.arange(outer_steps) * inner_steps)  # time axis in hours
