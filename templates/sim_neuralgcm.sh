@@ -6,8 +6,10 @@ HPCROOTDIR=%HPCROOTDIR%
 EXPID=%DEFAULT.EXPID%
 JOBNAME=%JOBNAME%
 
+JOBNAME_WITHOUT_EXPID=$(echo ${JOBNAME} | sed 's/^[^_]*_//')
+
 logs_dir=${HPCROOTDIR}/LOG_${EXPID}
-configfile=$logs_dir/${JOBNAME}_config
+configfile=$logs_dir/config_neuralgcm_${JOBNAME}
 
 source ${HPCROOTDIR}/lib/MARENOSTRUM5/util.sh
 conda_init
