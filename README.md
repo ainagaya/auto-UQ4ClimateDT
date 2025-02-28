@@ -1,4 +1,4 @@
-# auto-aifs
+# auto-UQ4ClimateDT
 
 !WIP
 
@@ -12,10 +12,10 @@ Integration of `ai-models` with Autosubmit, to run using data from an FDB.
 ```
 autosubmit expid \
   --description "auto-aifs" \
-  --HPC MareNostrum5 \
+  --HPC MareNostrum5ACC \
   --minimal_configuration \
   --git_as_conf conf/ \
-  --git_repo git@github.com:ainagaya/auto-aifs.git \
+  --git_repo git@github.com:ainagaya/auto-UQ4ClimateDT.git \
   --git_branch main
 
 ```
