@@ -9,7 +9,7 @@ JOBNAME=%JOBNAME%
 JOBNAME_WITHOUT_EXPID=$(echo ${JOBNAME} | sed 's/^[^_]*_//')
 
 logs_dir=${HPCROOTDIR}/LOG_${EXPID}
-configfile=$logs_dir/config_neuralgcm_${JOBNAME}
+configfile=$logs_dir/config_neuralgcm_${JOBNAME_WITHOUT_EXPID}
 
 source ${HPCROOTDIR}/lib/MARENOSTRUM5/util.sh
 conda_init

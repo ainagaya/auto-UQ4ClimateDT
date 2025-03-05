@@ -1,6 +1,7 @@
-model_checkpoint: "%NEURALGCM.CHECKPOINT%"
+model_checkpoint: "%MODEL.CHECKPOINT%"
 era5_path: "/gpfs/scratch/bsc32/bsc032376/tfm/era5.zarr"
 start_time: '2020-02-14'
 end_time: '2020-02-18'
 data_inner_steps: 24  # process every 24th hour
 inner_steps: 24  # save model outputs once every 24 hours
+rng_key: "%MEMBER%"

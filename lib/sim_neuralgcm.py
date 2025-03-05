@@ -36,12 +36,13 @@ def define_variables(config):
     end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
-    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps
+    rng_key = config['rng_key']
+    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key
 
 args = parse_arguments()
 config = read_config(args.config)
 validate_config(config)
-model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps = define_variables(config)
+model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key = define_variables(config)
 
 print("imported everything")
 
@@ -66,7 +67,6 @@ print("initialize model state")
 
 inputs = model.inputs_from_xarray(eval_era5.isel(time=0))
 input_forcings = model.forcings_from_xarray(eval_era5.isel(time=0))
-rng_key = jax.random.key(42)  # optional for deterministic models
 initial_state = model.encode(inputs, input_forcings, rng_key)
 
 print("use persistence for forcing variables (SST and sea ice cover)")
@@ -83,7 +83,7 @@ final_state, predictions = model.unroll(
 predictions_ds = model.data_to_xarray(predictions, times=times)
 
 # Save the model state
-with open('model_state.pkl', 'wb') as f:
+with open(f'model_state-{start_time}-{end_time}-{rng_key}.pkl', 'wb') as f:
     pickle.dump(final_state, f)
 
 # Selecting ERA5 targets from exactly the same time slice
@@ -98,9 +98,28 @@ combined_ds = xarray.concat([target_data_ds, predictions_ds], 'model')
 combined_ds.coords['model'] = ['ERA5', 'NeuralGCM']
 
 # Save the forecast
-combined_ds.to_zarr('forecast.zarr')
+# final_step, predictions is a tuple of the advanced state at time steps * timestamp, 
+# and outputs with a leading time axis at the time-steps specified by steps, timedelta and start_with_input.
+
+# what is final_state?
+print(type(final_state))
+print(dir(final_state))
+print(final_state)
+
+try:
+    final_state.to_zarr("model_state.zarr", mode="w")
+except:
+    print("Error saving model state in Zarr")
+
+try:
+    final_state.to_netcdf("model_state.nc")
+except:
+    print("Error saving model state in NetCDF")
+
+
+#predictions.to_zarr("forecast.zarr", mode="w")
 
 # Visualize ERA5 vs NeuralGCM trajectories
-combined_ds.specific_humidity.sel(level=850).plot(
-    x='longitude', y='latitude', row='time', col='model', robust=True, aspect=2, size=2
-);
+# combined_ds.specific_humidity.sel(level=850).plot(
+#    x='longitude', y='latitude', row='time', col='model', robust=True, aspect=2, size=2
+#);
