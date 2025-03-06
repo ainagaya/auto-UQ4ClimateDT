@@ -8,6 +8,7 @@ from dinosaur import horizontal_interpolation
 from dinosaur import spherical_harmonic
 from dinosaur import xarray_utils
 import neuralgcm
+import os
 
 import argparse
 import yaml
@@ -36,13 +37,14 @@ def define_variables(config):
     end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
-    rng_key = config['rng_key']
-    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key
+    rng_key = int(config['rng_key'])
+    output_path = config['output_path']
+    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path
 
 args = parse_arguments()
 config = read_config(args.config)
 validate_config(config)
-model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key = define_variables(config)
+model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
 
 print("imported everything")
 
@@ -82,8 +84,12 @@ final_state, predictions = model.unroll(
 )
 predictions_ds = model.data_to_xarray(predictions, times=times)
 
+# create output_path if it doesn't exist
+if not os.path.exists(output_path):
+    os.makedirs(output_path)
+
 # Save the model state
-with open(f'model_state-{start_time}-{end_time}-{rng_key}.pkl', 'wb') as f:
+with open(f'{output_path}/model_state-{start_time}-{end_time}-{rng_key}.pkl', 'wb') as f:
     pickle.dump(final_state, f)
 
 # Selecting ERA5 targets from exactly the same time slice
@@ -93,6 +99,8 @@ target_trajectory = model.inputs_from_xarray(
     .isel(time=slice(outer_steps))
 )
 target_data_ds = model.data_to_xarray(target_trajectory, times=times)
+
+## fer el data to xarray amb "PREDICTIONS"
 
 combined_ds = xarray.concat([target_data_ds, predictions_ds], 'model')
 combined_ds.coords['model'] = ['ERA5', 'NeuralGCM']
@@ -116,6 +124,15 @@ try:
 except:
     print("Error saving model state in NetCDF")
 
+try:
+    predictions_ds.to_zarr(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.zarr", mode="w")
+except:
+    print("Error saving model state in Zarr")
+
+try:
+    predictions_ds.to_netcdf(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.nc")
+except:
+    print("Error saving model state in NetCDF")
 
 #predictions.to_zarr("forecast.zarr", mode="w")
 

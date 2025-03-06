@@ -1,0 +1,59 @@
+import gcsfs
+import jax
+import numpy as np
+import pickle
+import xarray
+
+from dinosaur import horizontal_interpolation
+from dinosaur import spherical_harmonic
+from dinosaur import xarray_utils
+import neuralgcm
+
+from functions import parse_arguments, read_config, define_variables
+
+args = parse_arguments()
+config = read_config(args.config)
+
+gcs = gcsfs.GCSFileSystem(token='anon')
+
+print("gcs initialied")
+
+# model_name = 'v1/deterministic_2_8_deg.pkl'  #@param ['v1/deterministic_0_7_deg.pkl', 'v1/deterministic_1_4_deg.pkl', 'v1/deterministic_2_8_deg.pkl', 'v1/stochastic_1_4_deg.pkl', 'v1_precip/stochastic_precip_2_8_deg.pkl', 'v1_precip/stochastic_evap_2_8_deg'] {type: "string"}
+model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
+
+with open(f'{model_checkpoint}', 'rb') as f:
+  ckpt = pickle.load(f)
+
+model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
+
+era5_path = 'gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3'
+full_era5 = xarray.open_zarr(gcs.get_mapper(era5_path), chunks=None)
+
+## M'ho puc baixar
+
+sliced_era5 = (
+    full_era5
+    [model.input_variables + model.forcing_variables]
+    .pipe(
+        xarray_utils.selective_temporal_shift,
+        variables=model.forcing_variables,
+        time_shift='24 hours',
+    )
+    .sel(time=slice(start_time, end_time, data_inner_steps))
+    .compute()
+)
+
+era5_grid = spherical_harmonic.Grid(
+    latitude_nodes=full_era5.sizes['latitude'],
+    longitude_nodes=full_era5.sizes['longitude'],
+    latitude_spacing=xarray_utils.infer_latitude_spacing(full_era5.latitude),
+    longitude_offset=xarray_utils.infer_longitude_offset(full_era5.longitude),
+)
+regridder = horizontal_interpolation.ConservativeRegridder(
+    era5_grid, model.data_coords.horizontal, skipna=True
+)
+eval_era5 = xarray_utils.regrid(sliced_era5, regridder)
+eval_era5 = xarray_utils.fill_nan_with_nearest(eval_era5)
+
+# save data to local disk in zarr
+eval_era5.to_zarr(f"{era5_path}/{start_time}", mode='w')
