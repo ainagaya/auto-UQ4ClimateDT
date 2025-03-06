@@ -21,7 +21,7 @@ def parse_arguments():
 def read_config(config_path):
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
-    
+
 def define_variables(config):
     model_checkpoint = config['model_checkpoint']
     era5_path = config['era5_path']

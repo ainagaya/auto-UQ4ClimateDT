@@ -25,4 +25,3 @@ function conda_init() {
     set -xuve
 
 }
-

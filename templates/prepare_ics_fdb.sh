@@ -150,7 +150,7 @@ main "$@"
 #     grid=$(awk -F= '/grid/ {gsub(/,/, "", $2); print $2}' $file)
 
 #     file_num=$(echo $file | awk -F_ '{print $2}' | awk -F. '{print $1}')
-    
+
 #     cat <<EOF > ${INPDIR}/request_${file_num}
 # retrieve,
 #    database=latlon,
@@ -183,4 +183,3 @@ main "$@"
 #     #    mv ${AI_MODEL}_${levtype}_${DATE:0:8}_${TIME}_${file_num}_fix.grib ${AI_MODEL}_${levtype}_${DATE:0:8}_${TIME}_${file_num}.grib
 #     #fi
 # done
-

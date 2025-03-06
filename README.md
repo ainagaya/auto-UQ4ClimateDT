@@ -2,7 +2,7 @@
 
 !WIP
 
-Integration of `ai-models` with Autosubmit, to run using data from an FDB. 
+Integration of `ai-models` with Autosubmit, to run using data from an FDB.
 
 ### Prerequisites
 - Autosubmit
@@ -29,5 +29,3 @@ autosubmit create $EXPID
 
 autosubmit run $EXPID
 ```
-
-

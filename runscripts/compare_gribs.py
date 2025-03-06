@@ -22,4 +22,3 @@ grib2.q.isel(time=-1).plot(ax=ax[1], transform=ccrs.PlateCarree())
 ax[0].coastlines()
 ax[1].coastlines()
 plt.savefig("q_comparison.png")
-

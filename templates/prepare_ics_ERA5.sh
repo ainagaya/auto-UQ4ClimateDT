@@ -61,7 +61,7 @@ path_to_atm="${ERA5_PATH}/${atm_file}"
 
 tmp_file="${INPDIR}/${AI_MODEL}_${START_DATE}_${END_DATE}.${file_format}"
 
-# List of dates between START_DATE and START_DATE + 1 
+# List of dates between START_DATE and START_DATE + 1
 dates=""
 current_date=$START_DATE
 while [ "$current_date" -le "$((START_DATE + 1))" ]; do

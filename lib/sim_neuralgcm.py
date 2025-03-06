@@ -23,13 +23,13 @@ def parse_arguments():
 def read_config(config_path):
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
-    
+
 def validate_config(config):
     required_keys = ['model_checkpoint', 'era5_path', 'start_time', 'end_time', 'data_inner_steps', 'inner_steps']
     for key in required_keys:
         if key not in config:
             raise ValueError(f'Key {key} is missing from the config file')
-    
+
 def define_variables(config):
     model_checkpoint = config['model_checkpoint']
     era5_path = config['era5_path']
@@ -106,7 +106,7 @@ combined_ds = xarray.concat([target_data_ds, predictions_ds], 'model')
 combined_ds.coords['model'] = ['ERA5', 'NeuralGCM']
 
 # Save the forecast
-# final_step, predictions is a tuple of the advanced state at time steps * timestamp, 
+# final_step, predictions is a tuple of the advanced state at time steps * timestamp,
 # and outputs with a leading time axis at the time-steps specified by steps, timedelta and start_with_input.
 
 # what is final_state?

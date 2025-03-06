@@ -29,4 +29,3 @@ PLATFORMS:
     PROCESSORS_PER_NODE: 80
     CUSTOM_DIRECTIVES: "['#SBATCH --export=ALL', '#SBATCH --hint=nomultithread']"
     MAX_WALLCLOCK: '00:30'
-

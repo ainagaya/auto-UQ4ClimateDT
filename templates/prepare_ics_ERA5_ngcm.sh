@@ -55,7 +55,7 @@ configfile=$logs_dir/config_neuralgcm_${JOBNAME_WITHOUT_EXPID}
 ICs_path=${ERA5_PATH}/${MODEL_NAME}/${AI_CHECKPOINT}/${START_DATE}-${END_DATE}
 if [ -d ${ICs_path} ]; then
     echo "ICs already exist for this chunk. Skipping."
-else 
+else
     mkdir -p ${ICs_path}
     python3 $HPCROOTDIR/lib/download_era5.py --config $configfile
 fi
