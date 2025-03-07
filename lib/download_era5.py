@@ -18,7 +18,6 @@ gcs = gcsfs.GCSFileSystem(token='anon')
 
 print("gcs initialied")
 
-# model_name = 'v1/deterministic_2_8_deg.pkl'  #@param ['v1/deterministic_0_7_deg.pkl', 'v1/deterministic_1_4_deg.pkl', 'v1/deterministic_2_8_deg.pkl', 'v1/stochastic_1_4_deg.pkl', 'v1_precip/stochastic_precip_2_8_deg.pkl', 'v1_precip/stochastic_evap_2_8_deg'] {type: "string"}
 model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
 
 with open(f'{model_checkpoint}', 'rb') as f:
