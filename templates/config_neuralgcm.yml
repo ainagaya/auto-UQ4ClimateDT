@@ -1,5 +1,5 @@
 model_checkpoint: "%MODEL.CHECKPOINT%"
-era5_path: "%DIRS.ERA5_PATH%/%MODEL.NAME%/%MODEL.CHECKPOINT%/%CHUNK_START_DATE%-%CHUNK_END_DATE%"
+era5_path: "%DIRS.ERA5_PATH%/%MODEL.NAME%/%MODEL.CHECKPOINT_NAME%/%CHUNK_START_DATE%-%CHUNK_END_DATE%"
 start_time: '2020-02-14'
 end_time: '2020-02-18'
 data_inner_steps: 24 # process every 24th hour

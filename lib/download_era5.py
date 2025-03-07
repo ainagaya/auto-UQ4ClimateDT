@@ -25,8 +25,8 @@ with open(f'{model_checkpoint}', 'rb') as f:
 
 model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
 
-era5_path = 'gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3'
-full_era5 = xarray.open_zarr(gcs.get_mapper(era5_path), chunks=None)
+era5_path_remote = 'gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3'
+full_era5 = xarray.open_zarr(gcs.get_mapper(era5_path_remote), chunks=None)
 
 ## M'ho puc baixar
 

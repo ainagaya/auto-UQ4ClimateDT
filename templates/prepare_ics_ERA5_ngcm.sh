@@ -15,6 +15,7 @@ AI_CHECKPOINT=%MODEL.CHECKPOINT%
 ERA5_PATH=%DIRS.ERA5_PATH%
 
 JOBNAME=%JOBNAME%
+EXPID=%DEFAULT.EXPID%
 
 #####################################################
 # Initializes conda
