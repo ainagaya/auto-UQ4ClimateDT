@@ -9,7 +9,18 @@ from dinosaur import spherical_harmonic
 from dinosaur import xarray_utils
 import neuralgcm
 
-from functions import parse_arguments, read_config, define_variables
+from functions import parse_arguments, read_config
+
+def define_variables(config):
+    model_checkpoint = config['model_checkpoint']
+    era5_path = config['era5_path']
+    start_time = config['start_time']
+    end_time = config['end_time']
+    data_inner_steps = config['data_inner_steps']
+    inner_steps = config['inner_steps']
+    output_path = config['output_path']
+    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, output_path
+
 
 args = parse_arguments()
 config = read_config(args.config)
@@ -18,7 +29,7 @@ gcs = gcsfs.GCSFileSystem(token='anon')
 
 print("gcs initialied")
 
-model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
+model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, output_path = define_variables(config)
 
 with open(f'{model_checkpoint}', 'rb') as f:
   ckpt = pickle.load(f)
@@ -55,4 +66,4 @@ eval_era5 = xarray_utils.regrid(sliced_era5, regridder)
 eval_era5 = xarray_utils.fill_nan_with_nearest(eval_era5)
 
 # save data to local disk in zarr
-eval_era5.to_zarr(f"{era5_path}/{start_time}", mode='w')
+eval_era5.to_zarr(f"{era5_path}", mode='w')

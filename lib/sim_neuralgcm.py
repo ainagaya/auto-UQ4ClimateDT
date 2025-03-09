@@ -12,34 +12,15 @@ import os
 
 import argparse
 import yaml
+from datetime import datetime
 
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(description='Run NeuralGCM model')
-    parser.add_argument('--config', '-c', type=str, default='config_neuralgcm.yaml',
-                        help='Path to the config file')
-    return parser.parse_args()
-
-def read_config(config_path):
-    with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+from functions import parse_arguments, read_config, define_variables
 
 def validate_config(config):
     required_keys = ['model_checkpoint', 'era5_path', 'start_time', 'end_time', 'data_inner_steps', 'inner_steps']
     for key in required_keys:
         if key not in config:
             raise ValueError(f'Key {key} is missing from the config file')
-
-def define_variables(config):
-    model_checkpoint = config['model_checkpoint']
-    era5_path = config['era5_path']
-    start_time = config['start_time']
-    end_time = config['end_time']
-    data_inner_steps = config['data_inner_steps']
-    inner_steps = config['inner_steps']
-    rng_key = int(config['rng_key'])
-    output_path = config['output_path']
-    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path
 
 args = parse_arguments()
 config = read_config(args.config)
@@ -61,9 +42,15 @@ print("Defined model")
 
 eval_era5 = xarray.open_zarr(era5_path, chunks=None)
 
-outer_steps = 4 * 24 // inner_steps  # total of 4 days
+start_date = datetime.strptime(start_time, '%Y-%m-%d')
+end_date = datetime.strptime(end_time, '%Y-%m-%d')
+days_to_run = (end_date - start_date).days
+
+outer_steps = days_to_run * 24 // inner_steps 
 timedelta = np.timedelta64(1, 'h') * inner_steps
 times = (np.arange(outer_steps) * inner_steps)  # time axis in hours
+
+print("Will run for", outer_steps, "steps")
 
 print("initialize model state")
 

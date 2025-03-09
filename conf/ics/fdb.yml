@@ -3,3 +3,4 @@ JOBS:
     FILE: templates/prepare_ics_fdb.sh
     PLATFORM: "%DEFAULT.HPCARCH%"
     RUNNING: CHUNK
+    DEPENCENDIES: SYNCHRONIZE
