@@ -1,0 +1,13 @@
+EXPERIMENT:
+  #DATELIST: 2035092306
+  DATELIST: 20230101
+  # Supply the list of members. LIST: fc0 fc1 fc2 fc3 fc4
+  MEMBERS: "1"
+  # Chunk size unit. STRING: hour, day, month, year
+  CHUNKSIZEUNIT: day
+  # Chunk size. NUMERIC: 4, 6, 12
+  CHUNKSIZE: 10
+  # Total number of chunks in experiment. NUMERIC: 30, 15, 10
+  NUMCHUNKS: 1
+  # Calendar used. LIST: standard, noleap
+  CALENDAR: standard
