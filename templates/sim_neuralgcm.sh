@@ -16,5 +16,7 @@ source ${HPCROOTDIR}/lib/MARENOSTRUM5/util.sh
 # conda_init
 # conda activate /gpfs/scratch/bsc32/bsc032376/envs/neuralgcm
 
-singularity exec --bind $HPCROOTDIR/lib --bind $logs_dir \
+module load singularity
+
+singularity exec --nv --bind $HPCROOTDIR/lib --bind $logs_dir \
     /gpfs/projects/bsc32/ml_models/emulator_models/neuralgcm/neuralgcm.sif "python3 $HPCROOTDIR/lib/sim_neuralgcm.py -c $configfile"
