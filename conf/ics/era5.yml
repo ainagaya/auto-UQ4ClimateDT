@@ -3,3 +3,4 @@ JOBS:
     FILE: templates/prepare_ics_ERA5_ngcm.sh,templates/config_neuralgcm.yml
     PLATFORM: "MARENOSTRUM5-LOGIN"
     RUNNING: CHUNK
+    DEPENDENCIES: SYNCHRONIZE

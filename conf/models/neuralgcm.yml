@@ -12,7 +12,7 @@ JOBS:
   SIM:
     FILE: templates/sim_neuralgcm.sh, templates/config_neuralgcm.yml
     PLATFORM: "MARENOSTRUM5ACC"
-    DEPENDECIES: SIM-1
+    DEPENDENCIES: SIM-1 PREPARE_ICS
     RUNNING: CHUNK
     NODES: 1
     PROCESSORS: 80
