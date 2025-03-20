@@ -29,6 +29,6 @@ def define_variables(config):
     end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
-    rng_key = config['rng_key']
+    rng_key = int(config['rng_key'])
     output_path = config['output_path']
     return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path

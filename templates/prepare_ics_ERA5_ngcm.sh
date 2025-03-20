@@ -9,12 +9,13 @@ END_DATE=%CHUNK_END_DATE%
 
 ## AI-MODEL
 MODEL_NAME=%MODEL.NAME%
-AI_CHECKPOINT=%MODEL.CHECKPOINT%
+AI_CHECKPOINT=%MODEL.CHECKPOINT_NAME%
 
 ## ERA5-PATH
 ERA5_PATH=%DIRS.ERA5_PATH%
 
 JOBNAME=%JOBNAME%
+EXPID=%DEFAULT.EXPID%
 
 #####################################################
 # Initializes conda
@@ -43,6 +44,7 @@ function conda_init() {
 }
 
 conda_init
+conda activate neuralgcm
 
 JOBNAME_WITHOUT_EXPID=$(echo ${JOBNAME} | sed 's/^[^_]*_//')
 

@@ -15,7 +15,10 @@ JOBS:
     DEPENDENCIES: SIM-1 PREPARE_ICS
     RUNNING: CHUNK
     NODES: 1
-    PROCESSORS: 80
+    FOR:
+      NAME: ["proc_1", "proc_2", "proc_4", "proc_8", "proc_16", "proc_32", "proc_64"]
+      PROCESSORS: ["1", "2", "4", "8", "16", "32", "64"]
+    CUSTOM_DIRECTIVES: "#SBATCH --gres=gpu:4"
   POSTPROC:
     FILE: templates/postproc_neuralgcm.sh,templates/config_post_neuralgcm.yml
     PLATFORM: "MARENOSTRUM5-LOGIN"
