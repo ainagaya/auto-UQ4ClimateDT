@@ -60,6 +60,7 @@ def process_requests(requests_path, output_path):
 
     # SHOULD BE TO ZARR
     # probably will need also to change to longnames(?)
+    merged_dataset.to_zarr(f"{output_path}/merged.zarr")
     merged_dataset.to_netcdf(f"{output_path}/merged.nc")
 
 
