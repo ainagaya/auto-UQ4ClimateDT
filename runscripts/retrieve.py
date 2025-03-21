@@ -2,6 +2,7 @@ import argparse
 import os
 import yaml
 from gsv.retriever import GSVRetriever
+import xarray
 
 
 def parse_args():
@@ -22,6 +23,9 @@ def process_requests(requests_path, output_path):
     gsv = GSVRetriever()
 
     count = 0
+
+    # initialize empty xarray dataset
+    merged_dataset = xarray.Dataset()
 
     for request in os.listdir(requests_path):
         print(f"Processing request {request}")
@@ -45,9 +49,13 @@ def process_requests(requests_path, output_path):
             print("Interpolation failed")
             continue
 
-        # Uncomment the following line to save as Zarr format
+        # Uncomment the following line to save as Zarr format -> need contianer
         # data_interp.to_zarr("interpol.zarr")
         data_interp.to_netcdf(f"{output_path}/interpol-{count}.nc")
+
+        # Store all the data into a single file
+        merged_dataset = xarray.merge([merged_dataset, data_interp])
+
         count += 1
 
 
