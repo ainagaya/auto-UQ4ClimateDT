@@ -36,9 +36,14 @@ def process_requests(requests_path, output_path):
             550, 500, 450, 400, 350, 300, 250, 225, 200, 175, 150, 125, 100, 70,
             50, 30, 20, 10, 7, 5, 3, 2, 1
         ]
-        data_interp = data.interp(level=levels)
-        print("Interpolated data:")
-        print(data_interp)
+
+        try:
+            data_interp = data.interp(level=levels)
+            print("Interpolated data:")
+            print(data_interp)
+        except ValueError
+            print("Interpolation failed")
+            continue
 
         # Uncomment the following line to save as Zarr format
         # data_interp.to_zarr("interpol.zarr")
