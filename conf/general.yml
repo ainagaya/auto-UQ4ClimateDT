@@ -11,3 +11,6 @@ JOBS:
     FILE: templates/synchronize.sh
     PLATFORM: local
     RUNNING: once
+GSV:
+  #CONTAINER: /gpfs/projects/echp01/containers/gsv/gsv_v2.6.0.sif
+  CONTAINER: /gpfs/scratch/bsc32/bsc032519/DE393/anemoi_zarr_gsv_2.9.5.sif
