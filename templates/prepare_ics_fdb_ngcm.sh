@@ -1,8 +1,9 @@
 #!/bin/bash
 
+HPCROOTDIR=%HPCROOTDIR%
 
 FDB_HOME=/gpfs/projects/ehpc01/dte/fdb
-DATA_PATH=/gpfs/scratch/ehpc01/dte/fdb/healpix
+DATA_PATH=${HPCROOTDIR}/data
 PROJE=/gpfs/projects/ehpc01
 
 # generate the requests
