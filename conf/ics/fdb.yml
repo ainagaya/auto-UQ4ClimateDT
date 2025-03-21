@@ -1,6 +1,6 @@
 JOBS:
   PREPARE_ICS:
-    FILE: templates/prepare_ics_fdb.sh
+    FILE: templates/prepare_ics_fdb_ngcm.sh
     PLATFORM: "%DEFAULT.HPCARCH%"
     RUNNING: CHUNK
     DEPENCENDIES: SYNCHRONIZE
