@@ -45,4 +45,5 @@ cd "${ROOTDIR}"/proj
 #     touch flag_tarball_sent
 # else
 rsync_to_remote "${HPCUSER}" "${HPCHOST}" "${PROJDEST}"/lib "${HPCROOTDIR}"
+rsync_to_remote "${HPCUSER}" "${HPCHOST}" "${PROJDEST}"/runscripts "${HPCROOTDIR}"
 #fi
