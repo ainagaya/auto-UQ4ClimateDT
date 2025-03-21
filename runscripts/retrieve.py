@@ -49,6 +49,11 @@ def process_requests(requests_path, output_path):
             print("Interpolation failed")
             continue
 
+        for var in data.variables:
+            if "standard_name" in data[var].attrs:
+                # Rename variables to standard names
+                data_interp = data_interp.rename({var: data[var].attrs["standard_name"]})
+
         # Uncomment the following line to save as Zarr format -> need contianer
         # data_interp.to_zarr("interpol.zarr")
         data_interp.to_netcdf(f"{output_path}/interpol-{count}.nc")
@@ -60,7 +65,7 @@ def process_requests(requests_path, output_path):
 
     # SHOULD BE TO ZARR
     # probably will need also to change to longnames(?)
-    merged_dataset.to_zarr(f"{output_path}/merged.zarr")
+    merged_dataset.to_zarr(f"{output_path}")
     merged_dataset.to_netcdf(f"{output_path}/merged.nc")
 
 
