@@ -58,6 +58,9 @@ def process_requests(requests_path, output_path):
 
         count += 1
 
+    # SHOULD BE TO ZARR
+    merged_dataset.to_netcdf(f"{output_path}/merged.nc")
+
 
 def main():
     """Main function."""
