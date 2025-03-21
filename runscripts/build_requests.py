@@ -34,6 +34,7 @@ def main():
             # build request for that param
             request = general.copy()
             request['param'] = param
+            request['levtype'] = levtype
 
             # if specified, add model specific requirements
             if 'levelist' in model['levtype'][levtype]:
