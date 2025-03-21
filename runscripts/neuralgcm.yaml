@@ -26,3 +26,4 @@ levtype:
     date: 20200101/to/20200102
     # specify that is daily
     time: 0000/to/2300/by/0600
+    levelist: [1]
