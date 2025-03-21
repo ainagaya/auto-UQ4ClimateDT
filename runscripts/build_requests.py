@@ -29,7 +29,7 @@ def main():
 
     for levtype in model['levtype']:
         print(levtype)
-        for param in model['levtype'][levtype]:
+        for param in model['levtype'][levtype]['param']:
             number_of_params += 1
             # build request for that param
             request = general.copy()
