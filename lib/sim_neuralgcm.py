@@ -17,7 +17,7 @@ from datetime import datetime
 from functions import parse_arguments, read_config, define_variables
 
 def validate_config(config):
-    required_keys = ['model_checkpoint', 'era5_path', 'start_time', 'end_time', 'data_inner_steps', 'inner_steps']
+    required_keys = ['model_checkpoint', 'INI_DATA_PATH', 'start_time', 'end_time', 'data_inner_steps', 'inner_steps']
     for key in required_keys:
         if key not in config:
             raise ValueError(f'Key {key} is missing from the config file')
@@ -25,7 +25,7 @@ def validate_config(config):
 args = parse_arguments()
 config = read_config(args.config)
 validate_config(config)
-model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
+model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
 
 print("imported everything")
 
@@ -40,13 +40,13 @@ model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
 
 print("Defined model")
 
-eval_era5 = xarray.open_zarr(era5_path, chunks=None)
+eval_era5 = xarray.open_zarr(INI_DATA_PATH, chunks=None)
 
 start_date = datetime.strptime(start_time, '%Y-%m-%d')
 end_date = datetime.strptime(end_time, '%Y-%m-%d')
 days_to_run = (end_date - start_date).days
 
-outer_steps = days_to_run * 24 // inner_steps 
+outer_steps = days_to_run * 24 // inner_steps
 timedelta = np.timedelta64(1, 'h') * inner_steps
 times = (np.arange(outer_steps) * inner_steps)  # time axis in hours
 

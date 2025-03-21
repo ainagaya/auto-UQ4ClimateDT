@@ -3,7 +3,7 @@
 HPCROOTDIR=%HPCROOTDIR%
 
 FDB_HOME=/gpfs/projects/ehpc01/dte/fdb
-DATA_PATH=${HPCROOTDIR}/data
+DATA_PATH=%DIRS.INI_DATA_PATH%
 PROJE=/gpfs/projects/ehpc01
 
 mkdir -p $DATA_PATH

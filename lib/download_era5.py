@@ -13,13 +13,13 @@ from functions import parse_arguments, read_config
 
 def define_variables(config):
     model_checkpoint = config['model_checkpoint']
-    era5_path = config['era5_path']
+    INI_DATA_PATH = config['INI_DATA_PATH']
     start_time = config['start_time']
     end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
     output_path = config['output_path']
-    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, output_path
+    return model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, output_path
 
 
 args = parse_arguments()
@@ -29,15 +29,15 @@ gcs = gcsfs.GCSFileSystem(token='anon')
 
 print("gcs initialied")
 
-model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, output_path = define_variables(config)
+model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, output_path = define_variables(config)
 
 with open(f'{model_checkpoint}', 'rb') as f:
   ckpt = pickle.load(f)
 
 model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
 
-era5_path_remote = 'gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3'
-full_era5 = xarray.open_zarr(gcs.get_mapper(era5_path_remote), chunks=None)
+INI_DATA_PATH_remote = 'gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3'
+full_era5 = xarray.open_zarr(gcs.get_mapper(INI_DATA_PATH_remote), chunks=None)
 
 ## M'ho puc baixar
 
@@ -66,4 +66,4 @@ eval_era5 = xarray_utils.regrid(sliced_era5, regridder)
 eval_era5 = xarray_utils.fill_nan_with_nearest(eval_era5)
 
 # save data to local disk in zarr
-eval_era5.to_zarr(f"{era5_path}", mode='w')
+eval_era5.to_zarr(f"{INI_DATA_PATH}", mode='w')

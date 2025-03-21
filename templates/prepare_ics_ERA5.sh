@@ -14,7 +14,7 @@ MODEL_NAME=%MODEL.NAME%
 AI_CHECKPOINT=%MODEL.CHECKPOINT%
 
 ## ERA5-PATH
-ERA5_PATH=%DIRS.ERA5_PATH%
+INI_DATA_PATH=%DIRS.INI_DATA_PATH%
 
 #####################################################
 # Initializes conda
@@ -56,8 +56,8 @@ if [ "${AI_MODEL}" == "aifs" ]; then
     sfc_file="sfc_${AI_MODEL}_6_12_2023.${file_format}"
 fi
 
-path_to_sfc="${ERA5_PATH}/${sfc_file}"
-path_to_atm="${ERA5_PATH}/${atm_file}"
+path_to_sfc="${INI_DATA_PATH}/${sfc_file}"
+path_to_atm="${INI_DATA_PATH}/${atm_file}"
 
 tmp_file="${INPDIR}/${AI_MODEL}_${START_DATE}_${END_DATE}.${file_format}"
 
