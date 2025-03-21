@@ -41,7 +41,7 @@ def process_requests(requests_path, output_path):
             data_interp = data.interp(level=levels)
             print("Interpolated data:")
             print(data_interp)
-        except ValueError
+        except ValueError:
             print("Interpolation failed")
             continue
 
