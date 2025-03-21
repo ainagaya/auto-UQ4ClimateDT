@@ -24,6 +24,7 @@ def process_requests(requests_path, output_path):
     count = 0
 
     for request in os.listdir(requests_path):
+        print(f"Processing request {request}")
         data = gsv.request_data(f"{requests_path}/{request}")
         print("Raw data:")
         print(data)
