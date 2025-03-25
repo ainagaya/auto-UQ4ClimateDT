@@ -5,8 +5,15 @@ HPCROOTDIR=%HPCROOTDIR%
 FDB_HOME=/gpfs/projects/ehpc01/dte/fdb
 DATA_PATH="%DIRS.INI_DATA_PATH%/%MODEL.NAME%/%MODEL.CHECKPOINT_NAME%/%CHUNK_START_DATE%-%CHUNK_END_DATE%"
 PROJE=/gpfs/projects/ehpc01
+REGENERATE_ICS=%MODEL.REGENERATE_ICS%
 
 GSV_CONTAINER=%GSV.CONTAINER%
+
+# if we want to regenerate the ICS, remove the data_path directory
+if [ "${REGENERATE_ICS,,}" = "true" ]; then
+    rm -rf ${DATA_PATH}
+fi
+
 
 mkdir -p $DATA_PATH
 mkdir -p ${HPCROOTDIR}/requests

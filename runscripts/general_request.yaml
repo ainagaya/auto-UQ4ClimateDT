@@ -11,5 +11,5 @@ resolution: standard
 expver: "0001"
 date: 20200101/to/20200102
 time: 0000/to/2300/by/0600
-#grid: 0.1/0.1
+#grid: 1.0/1.0
 #method: nn

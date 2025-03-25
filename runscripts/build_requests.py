@@ -27,6 +27,8 @@ def main():
 
     number_of_params = 0
 
+    dict = {}
+
     for levtype in model['levtype']:
         print(levtype)
         for param in model['levtype'][levtype]['param']:
@@ -43,11 +45,14 @@ def main():
                 request['date'] = model['levtype'][levtype]['date']
             if 'time' in model['levtype'][levtype]:
                 request['time'] = model['levtype'][levtype]['time']
+            if 'levelist_interpol' in model['levtype'][levtype]:
+                dict['levelist_interpol'] = model['levtype'][levtype]['levelist_interpol']
 
             # save request
             output = os.path.join(args.output, f"request_{number_of_params}.yaml")
             with open(output, 'w') as f:
-                yaml.dump(request, f)
+                dict["mars-keys"] = request
+                yaml.dump(dict, f)
             print(f"Saved request to {output}")
 
 
