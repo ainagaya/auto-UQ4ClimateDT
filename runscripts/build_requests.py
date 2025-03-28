@@ -27,14 +27,13 @@ def main():
 
     number_of_params = 0
 
-    dict = {}
-
     for levtype in model['levtype']:
         print(levtype)
         for param in model['levtype'][levtype]['param']:
             number_of_params += 1
             # build request for that param
             request = general.copy()
+            dict = {}
             request['param'] = param
             request['levtype'] = levtype
 

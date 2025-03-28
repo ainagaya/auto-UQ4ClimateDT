@@ -38,9 +38,33 @@ with open(model_checkpoint, 'rb') as f:
 
 model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
 
+print(model)
+
 print("Defined model")
 
-eval_era5 = xarray.open_zarr(INI_DATA_PATH, chunks=None)
+data_original = xarray.open_zarr(INI_DATA_PATH, chunks=None)
+
+data_grid = spherical_harmonic.Grid(
+    latitude_nodes=data_original.sizes['latitude'],
+    longitude_nodes=data_original.sizes['longitude'],
+    latitude_spacing=xarray_utils.infer_latitude_spacing(data_original.latitude),
+    longitude_offset=xarray_utils.infer_longitude_offset(data_original.longitude),
+)
+
+# Other available regridders include BilinearRegridder and NearestRegridder.
+regridder = horizontal_interpolation.ConservativeRegridder(
+    data_grid, model.data_coords.horizontal, skipna=True
+)
+
+regridded = xarray_utils.regrid(data_original, regridder)
+
+# fill nans
+print(regridded)
+
+# look for nan values
+print(regridded.isnull().sum())
+
+data = xarray_utils.fill_nan_with_nearest(regridded)
 
 start_date = datetime.strptime(start_time, '%Y-%m-%d')
 end_date = datetime.strptime(end_time, '%Y-%m-%d')
@@ -54,12 +78,12 @@ print("Will run for", outer_steps, "steps")
 
 print("initialize model state")
 
-inputs = model.inputs_from_xarray(eval_era5.isel(time=0))
-input_forcings = model.forcings_from_xarray(eval_era5.isel(time=0))
+inputs = model.inputs_from_xarray(data.isel(time=0))
+input_forcings = model.forcings_from_xarray(data.isel(time=0))
 initial_state = model.encode(inputs, input_forcings, rng_key)
 
 print("use persistence for forcing variables (SST and sea ice cover)")
-all_forcings = model.forcings_from_xarray(eval_era5.head(time=1))
+all_forcings = model.forcings_from_xarray(data.head(time=1))
 
 print("make forecast")
 final_state, predictions = model.unroll(
@@ -81,7 +105,7 @@ with open(f'{output_path}/model_state-{start_time}-{end_time}-{rng_key}.pkl', 'w
 
 # Selecting ERA5 targets from exactly the same time slice
 target_trajectory = model.inputs_from_xarray(
-    eval_era5
+    data
     .thin(time=(inner_steps // data_inner_steps))
     .isel(time=slice(outer_steps))
 )

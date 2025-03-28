@@ -1,0 +1,14 @@
+air_temperature: temperature
+avg_siconc: sea_ice_cover
+avg_tos: sea_surface_temperature
+clwc: specific_cloud_liquid_water_content
+eastward_wind: u_component_of_wind
+forecast_reference_time: time
+geopotential: geopotential
+#lat_bounds: lat_bounds
+#latitude: latitudes
+#lon_bounds: lon_bounds
+#longitude: longitudes
+northward_wind: v_component_of_wind
+specific_humidity: specific_humidity
+tciw: specific_cloud_ice_water_content
