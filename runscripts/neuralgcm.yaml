@@ -16,6 +16,7 @@ levtype:
     # date should come from the command line as AS variable
     date: 20200101/to/20200102
     time: 0000/to/2300/by/0600
+    #time: "0000"
   sfc:
     param:
       - 79
@@ -26,6 +27,7 @@ levtype:
         ]    
     date: 20200101/to/20200102
     time: 0000/to/2300/by/0600
+    #time: "0000"
   o2d:
     param:
       - 263101

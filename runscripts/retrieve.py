@@ -38,6 +38,8 @@ def process_requests(requests_path, output_path, translator=False):
             logging.debug(f"Mars keys: {mars_keys}")
             data = gsv.request_data(mars_keys)
             logging.info(f"Data retrieved for request {request}")
+            # save the data in a netcdf file
+            data.to_netcdf(f"{output_path}/raw-{count}.nc")
         except Exception as e:
             logging.warning(f"Failed to retrieve data for request {request}")
             continue
@@ -47,8 +49,10 @@ def process_requests(requests_path, output_path, translator=False):
 
         if "levelist_interpol" in request:
             # if data doesn't have the dimension "level", create it, filling it with 0
+            logging.info("Interpolating data")
             levels = request["levelist_interpol"]
             if "level" not in data.dims:
+                logging.info("Adding level dimension")
                 zero_layer = xarray.full_like(data.expand_dims(dim="level"), fill_value = 0)
                 #data = data.expand_dims("level")
                 # Initialize with NaN (or another default value)
@@ -63,21 +67,28 @@ def process_requests(requests_path, output_path, translator=False):
                 #         data.loc[{"level": level}] = 1
                 data = xarray.concat([zero_layer, data.expand_dims(dim="level")], dim="level")
             else:
+                logging.info("Level dimension already exists")
                 data_interp = data.interp(level=levels)
+                # plot each level and each time step
             logging.info("Interpolated data:", data_interp)
         else:
+            logging.info("No interpolation needed")
             data_interp = data
 
-        for var in data_interp.variables:
+        # copy the array to a new variable, so we can rename it
+        data_interp_original = data_interp.copy()
+
+        for var in data_interp_original.variables:
             logging.debug(f"Variable: {var}")
-            if "standard_name" in data_interp[var].attrs:
+            if "standard_name" in data_interp_original[var].attrs:
+                logging.debug(f"Standard name: {data_interp_original[var].attrs['standard_name']}")
                 original_name = var
                 # Rename variables to standard names
                 # if the standard name is not unknown
-                if data_interp[var].attrs["standard_name"] == "unknown":
-                    renamed_name = var
+                if data_interp_original[var].attrs["standard_name"] == "unknown":
+                    renamed_name = original_name
                 else:
-                    renamed_name = data_interp[var].attrs["standard_name"]
+                    renamed_name = data_interp_original[var].attrs["standard_name"]
                 
                 data_interp = data_interp.rename({var: renamed_name})
                 logging.debug(f"Renamed {original_name} to {renamed_name}")
