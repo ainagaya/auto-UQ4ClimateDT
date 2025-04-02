@@ -2,6 +2,7 @@ import argparse
 import os
 import yaml
 import logging
+import numpy as np
 import xarray
 from gsv.retriever import GSVRetriever
 
@@ -44,12 +45,32 @@ def interpolate_data(data, levels):
     """Interpolate data to specified levels."""
     logging.info("Interpolating data to specified levels")
     if "level" not in data.dims:
-        logging.info("Adding level dimension")
-        zero_layer = xarray.full_like(data.expand_dims(dim="level"), fill_value=0)
-        data = xarray.concat([zero_layer, data.expand_dims(dim="level")], dim="level")
+        logging.info("Adding level dimension to variable tciw")
+        # TODO GENERALIZE FOR VARIABLES
+        twod_data = data["tciw"]
+        print(twod_data)
+        time_dim, lat_dim, lon_dim = twod_data.shape  # Get dimensions
+        print(time_dim, lat_dim, lon_dim)
+        new_shape = (time_dim, len(levels), lat_dim, lon_dim)
+        threed_data = np.zeros(new_shape, dtype=np.float64)
+        threed_data[:,0,:,:] = twod_data
+        ds_new = xarray.Dataset({
+            "tciw": (("time", "level", "lat", "lon"), threed_data)
+        }, coords={
+            "time": data["time"],
+            "level": levels,
+            "lat": data["lat"],
+            "lon": data["lon"]
+        })
+        # Add attributes from original data
+        #ds_new["tciw"].attrs.update(data["tciw"].attrs)
+        ds_new["tciw"].attrs = data["tciw"].attrs.copy()
+
+        #zero_layer = xarray.full_like(data.expand_dims(dim="level"), fill_value=0)
+        #data = xarray.concat([zero_layer, data.expand_dims(dim="level")], dim="level")
     else:
-        data.interp(level=levels)
-    return data
+        ds_new = data.interp(level=levels)
+    return ds_new
 
 
 def rename_variables(data, translator_file=None):
@@ -79,23 +100,18 @@ def process_requests(requests_path, output_path, translator_path=None):
 
     for count, request_file in enumerate(os.listdir(requests_path)):
         logging.info(f"Processing request {request_file}")
-        try:
-            request = load_request(os.path.join(requests_path, request_file))
-            mars_keys = request["mars-keys"]
-            data = retrieve_data(gsv, mars_keys)
-            save_data(data, output_path, f"raw-{count}.nc")
+        request = load_request(os.path.join(requests_path, request_file))
+        mars_keys = request["mars-keys"]
+        data = retrieve_data(gsv, mars_keys)
+        save_data(data, output_path, f"raw-{count}.nc")
 
-            if "levelist_interpol" in request:
-                levels = request["levelist_interpol"]
-                data = interpolate_data(data, levels)
+        if "levelist_interpol" in request:
+            levels = request["levelist_interpol"]
+            data = interpolate_data(data, levels)
 
-            data = rename_variables(data, translator_file)
-            save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
-            merged_dataset = xarray.merge([merged_dataset, data], compat="override")
-
-        except Exception as e:
-            logging.warning(f"Failed to process request {request_file}: {e}")
-            continue
+        data = rename_variables(data, translator_file)
+        save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
+        merged_dataset = xarray.merge([merged_dataset, data], compat="override")
 
     merged_dataset.to_zarr(output_path)
 

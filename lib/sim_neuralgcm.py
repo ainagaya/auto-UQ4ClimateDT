@@ -93,7 +93,10 @@ final_state, predictions = model.unroll(
     timedelta=timedelta,
     start_with_input=True,
 )
+
 predictions_ds = model.data_to_xarray(predictions, times=times)
+#predictions_ds = model.data_to_xarray(predictions, times=None)
+
 
 # create output_path if it doesn't exist
 if not os.path.exists(output_path):
