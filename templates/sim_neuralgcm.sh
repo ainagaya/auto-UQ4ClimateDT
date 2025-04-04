@@ -13,7 +13,10 @@ configfile=$logs_dir/config_neuralgcm_${JOBNAME_WITHOUT_EXPID}
 
 module load cuda
 source ${HPCROOTDIR}/lib/MARENOSTRUM5/util.sh
-conda_init
-conda activate /gpfs/scratch/bsc32/bsc032376/envs/neuralgcm
+# conda_init
+# conda activate /gpfs/scratch/bsc32/bsc032376/envs/neuralgcm
 
-python3 $HPCROOTDIR/lib/sim_neuralgcm.py -c $configfile
+module load singularity
+
+singularity exec --nv --bind $HPCROOTDIR/lib --bind $logs_dir \
+    /gpfs/projects/bsc32/ml_models/emulator_models/neuralgcm/neuralgcm.sif "python3 $HPCROOTDIR/lib/sim_neuralgcm.py -c $configfile"
