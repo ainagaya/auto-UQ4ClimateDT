@@ -18,5 +18,5 @@ source ${HPCROOTDIR}/lib/MARENOSTRUM5/util.sh
 
 module load singularity
 
-singularity exec --nv --bind $HPCROOTDIR/lib --bind $logs_dir \
-    /gpfs/projects/bsc32/ml_models/emulator_models/neuralgcm/neuralgcm.sif "python3 $HPCROOTDIR/lib/sim_neuralgcm.py -c $configfile"
+singularity exec --nv --bind $HPCROOTDIR/lib --bind $logs_dir --env HPCROOTDIR=$HPCROOTDIR --env configfile=$configfile \
+    /gpfs/scratch/ehpc204/bsc032376/neuralgcm_bsc_v1.0.sif python3 $HPCROOTDIR/lib/sim_neuralgcm.py -c $configfile

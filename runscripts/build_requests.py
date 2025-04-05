@@ -17,8 +17,13 @@ def _parse_args():
     parser = argparse.ArgumentParser(description='Build requests')
     parser.add_argument('--general', type=str, default="general_request.yaml", help='General request yaml file')
     parser.add_argument('--model', type=str, default="neuralgcm.yaml", help='Specific request yaml file')
+    parser.add_argument('--startdate', type=str, help='Start date')
+    parser.add_argument('--enddate', type=str, help='End date')
     parser.add_argument('--output', type=str, default=".", help='Output directory')
     return parser.parse_args()
+
+def generate_date(startdate, enddate):
+    return f"{startdate}/to/{enddate}"
 
 def main():
     args = _parse_args()
@@ -36,12 +41,11 @@ def main():
             dict = {}
             request['param'] = param
             request['levtype'] = levtype
+            request['date'] = generate_date(args.startdate, args.enddate)
 
             # if specified, add model specific requirements
             if 'levelist' in model['levtype'][levtype]:
                 request['levelist'] = model['levtype'][levtype]['levelist']
-            if 'date' in model['levtype'][levtype]:
-                request['date'] = model['levtype'][levtype]['date']
             if 'time' in model['levtype'][levtype]:
                 request['time'] = model['levtype'][levtype]['time']
             if 'levelist_interpol' in model['levtype'][levtype]:

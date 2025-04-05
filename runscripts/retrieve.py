@@ -52,7 +52,8 @@ def interpolate_data(data, levels):
         time_dim, lat_dim, lon_dim = twod_data.shape  # Get dimensions
         print(time_dim, lat_dim, lon_dim)
         new_shape = (time_dim, len(levels), lat_dim, lon_dim)
-        threed_data = np.zeros(new_shape, dtype=np.float64)
+        #threed_data = np.zeros(new_shape, dtype=np.float64)
+        threed_data = np.random.rand(*new_shape).astype(np.float64)
         threed_data[:,0,:,:] = twod_data
         ds_new = xarray.Dataset({
             "tciw": (("time", "level", "lat", "lon"), threed_data)

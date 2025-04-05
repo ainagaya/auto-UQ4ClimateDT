@@ -1,4 +1,4 @@
-import gcsfs
+
 import jax
 import numpy as np
 import pickle
@@ -27,22 +27,25 @@ config = read_config(args.config)
 validate_config(config)
 model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path = define_variables(config)
 
-print("imported everything")
+print("model_checkpoint", model_checkpoint)
+print("INI_DATA_PATH", INI_DATA_PATH)
+print("start_time", start_time)
+print("end_time", end_time)
+print("data_inner_steps", data_inner_steps)
+print("inner_steps", inner_steps)
+print("rng_key", rng_key)
 
-gcs = gcsfs.GCSFileSystem(token='anon')
-
-print("gcs initialied")
 
 with open(model_checkpoint, 'rb') as f:
   ckpt = pickle.load(f)
 
 model = neuralgcm.PressureLevelModel.from_checkpoint(ckpt)
 
-print(model)
-
-print("Defined model")
+print("model", model)
 
 data_original = xarray.open_zarr(INI_DATA_PATH, chunks=None)
+
+# Flip latitude and longitude coordinates, to match ERA5 ???
 
 data_grid = spherical_harmonic.Grid(
     latitude_nodes=data_original.sizes['latitude'],
@@ -67,12 +70,23 @@ print(regridded.isnull().sum())
 data = xarray_utils.fill_nan_with_nearest(regridded)
 
 start_date = datetime.strptime(start_time, '%Y-%m-%d')
+print("start_date", start_date)
+
 end_date = datetime.strptime(end_time, '%Y-%m-%d')
+print("end_date", end_date)
+
+
 days_to_run = (end_date - start_date).days
+print("days_to_run", days_to_run)
 
 outer_steps = days_to_run * 24 // inner_steps
+print("outer_steps", outer_steps)
+
 timedelta = np.timedelta64(1, 'h') * inner_steps
+print("timedelta", timedelta)
+
 times = (np.arange(outer_steps) * inner_steps)  # time axis in hours
+print("times", times)
 
 print("Will run for", outer_steps, "steps")
 
@@ -94,8 +108,20 @@ final_state, predictions = model.unroll(
     start_with_input=True,
 )
 
+print("final_state", final_state)
+print("predictions", predictions)
+
+print("predictions type:", type(predictions))
+print("predictions shape:", jax.tree_map(lambda x: x.shape, predictions))
+
+
 predictions_ds = model.data_to_xarray(predictions, times=times)
 #predictions_ds = model.data_to_xarray(predictions, times=None)
+
+print("predictions_ds", predictions_ds)
+print("predictions_ds shape:", predictions_ds.shape)
+print("predictions_ds time:", predictions_ds.time)
+
 
 
 # create output_path if it doesn't exist
@@ -106,47 +132,17 @@ if not os.path.exists(output_path):
 with open(f'{output_path}/model_state-{start_time}-{end_time}-{rng_key}.pkl', 'wb') as f:
     pickle.dump(final_state, f)
 
-# Selecting ERA5 targets from exactly the same time slice
-target_trajectory = model.inputs_from_xarray(
-    data
-    .thin(time=(inner_steps // data_inner_steps))
-    .isel(time=slice(outer_steps))
-)
-target_data_ds = model.data_to_xarray(target_trajectory, times=times)
-
 ## fer el data to xarray amb "PREDICTIONS"
-
-combined_ds = xarray.concat([target_data_ds, predictions_ds], 'model')
-combined_ds.coords['model'] = ['ERA5', 'NeuralGCM']
 
 # Save the forecast
 # final_step, predictions is a tuple of the advanced state at time steps * timestamp,
 # and outputs with a leading time axis at the time-steps specified by steps, timedelta and start_with_input.
 
-# what is final_state?
-print(type(final_state))
-print(dir(final_state))
-print(final_state)
 
-try:
-    final_state.to_zarr("model_state.zarr", mode="w")
-except:
-    print("Error saving model state in Zarr")
+predictions_ds.to_netcdf(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.nc")
+predictions_ds.to_zarr(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.zarr", mode="w")
 
-try:
-    final_state.to_netcdf("model_state.nc")
-except:
-    print("Error saving model state in NetCDF")
 
-try:
-    predictions_ds.to_zarr(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.zarr", mode="w")
-except:
-    print("Error saving model state in Zarr")
-
-try:
-    predictions_ds.to_netcdf(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.nc")
-except:
-    print("Error saving model state in NetCDF")
 
 #predictions.to_zarr("forecast.zarr", mode="w")
 

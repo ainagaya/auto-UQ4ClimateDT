@@ -3,7 +3,7 @@ PLATFORMS:
     #TYPE: SLURM
     TYPE: ps
     HOST: mn5-gpp
-    PROJECT: bsc32
+    PROJECT: ehpc204
     USER: bsc032376
     QUEUE: gp_debug
     SCRATCH_DIR: /gpfs/scratch
@@ -18,7 +18,7 @@ PLATFORMS:
     TYPE: SLURM
     #TYPE: ps
     HOST: mn5-acc
-    PROJECT: bsc32
+    PROJECT: ehpc204
     USER: bsc032376
     QUEUE: acc_debug
     SCRATCH_DIR: /gpfs/scratch
@@ -32,7 +32,7 @@ PLATFORMS:
   MARENOSTRUM5-LOGIN:
     TYPE: ps
     HOST: mn5-login
-    PROJECT: bsc32
+    PROJECT: ehpc204
     USER: bsc032376
     QUEUE: ''
     SCRATCH_DIR: /gpfs/scratch
