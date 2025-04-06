@@ -3,7 +3,7 @@ import os
 import yaml
 import logging
 import numpy as np
-import xarray
+import xarray as xr
 from gsv.retriever import GSVRetriever
 
 
@@ -41,36 +41,70 @@ def save_data(data, output_path, filename):
     data.to_netcdf(os.path.join(output_path, filename))
 
 
-def interpolate_data(data, levels):
-    """Interpolate data to specified levels."""
+def estimate_sciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
+    vertical_sum = liquid_profile.sum(dim="level")
+    vertical_fraction = liquid_profile / vertical_sum.where(vertical_sum != 0, np.nan)
+    specific_ice = total_ice * vertical_fraction
+    return specific_ice.fillna(0)
+
+def estimate_sciwc_constant(total_ice: xr.DataArray, level_dim: int) -> xr.DataArray:
+    levels = np.arange(level_dim)
+    return (total_ice / level_dim).expand_dims({"level": levels}).transpose("level", ...)
+
+def interpolate_data(data, levels, method="constant", era5_ds=None):
+    """
+    Interpolate or generate `specific_cloud_ice_water_content` (sciwc)
+    from 2D data or interpolate 3D data to target levels.
+    
+    Args:
+        data: xarray.Dataset containing the necessary input fields
+        levels: list or array of vertical levels to interpolate to
+        method: 'era5', 'approximate', or 'constant'
+        era5_ds: xarray.Dataset with ERA5 data (required for 'era5' method)
+        
+    Returns:
+        xarray.Dataset with sciwater_content interpolated to requested levels
+    """
     logging.info("Interpolating data to specified levels")
+
     if "level" not in data.dims:
         logging.info("Adding level dimension to variable tciw")
-        # TODO GENERALIZE FOR VARIABLES
-        twod_data = data["tciw"]
-        print(twod_data)
-        time_dim, lat_dim, lon_dim = twod_data.shape  # Get dimensions
-        print(time_dim, lat_dim, lon_dim)
+        twod_data = data["tciw"]  # 2D: (time, lat, lon)
+        time_dim, lat_dim, lon_dim = twod_data.shape
         new_shape = (time_dim, len(levels), lat_dim, lon_dim)
-        #threed_data = np.zeros(new_shape, dtype=np.float64)
-        threed_data = np.random.rand(*new_shape).astype(np.float64)
-        threed_data[:,0,:,:] = twod_data
-        ds_new = xarray.Dataset({
-            "tciw": (("time", "level", "lat", "lon"), threed_data)
+
+        if method == "approximate":
+            threed_data = np.zeros(new_shape, dtype=np.float64)
+            for t in range(time_dim):
+                threed_data[t] = estimate_sciwc_approximate(
+                    liquid_profile=data["clwc"][t],  # 3D: (level, lat, lon)
+                    total_ice=data["tciw"][t]       # 2D: (lat, lon)
+                ).values
+        elif method == "constant":
+            threed_data = np.zeros(new_shape, dtype=np.float64)
+            for t in range(time_dim):
+                threed_data[t] = estimate_sciwc_constant(
+                    total_ice=data["tciw"][t], level_dim=len(levels)
+                ).values
+        else:
+            raise ValueError(f"Unknown method '{method}'")
+
+        ds_new = xr.Dataset({
+            "sciwc": (("time", "level", "lat", "lon"), threed_data)
         }, coords={
             "time": data["time"],
             "level": levels,
             "lat": data["lat"],
             "lon": data["lon"]
         })
-        # Add attributes from original data
-        #ds_new["tciw"].attrs.update(data["tciw"].attrs)
-        ds_new["tciw"].attrs = data["tciw"].attrs.copy()
+        ds_new["sciwc"].attrs = {
+            "units": "kg/kg",
+            "long_name": "specific_cloud_ice_water_content"
+        }
 
-        #zero_layer = xarray.full_like(data.expand_dims(dim="level"), fill_value=0)
-        #data = xarray.concat([zero_layer, data.expand_dims(dim="level")], dim="level")
     else:
         ds_new = data.interp(level=levels)
+
     return ds_new
 
 
@@ -93,7 +127,7 @@ def rename_variables(data, translator_file=None):
 def process_requests(requests_path, output_path, translator_path=None):
     """Process GSV data requests."""
     gsv = GSVRetriever()
-    merged_dataset = xarray.Dataset()
+    merged_dataset = xr.Dataset()
     translator_file = None
 
     if translator_path and os.path.exists(translator_path):
@@ -112,7 +146,7 @@ def process_requests(requests_path, output_path, translator_path=None):
 
         data = rename_variables(data, translator_file)
         save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
-        merged_dataset = xarray.merge([merged_dataset, data], compat="override")
+        merged_dataset = xr.merge([merged_dataset, data], compat="override")
 
     merged_dataset.to_zarr(output_path)
 
