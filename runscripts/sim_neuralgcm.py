@@ -99,6 +99,8 @@ initial_state = model.encode(inputs, input_forcings, rng_key)
 print("use persistence for forcing variables (SST and sea ice cover)")
 all_forcings = model.forcings_from_xarray(data.head(time=1))
 
+print("all_forcings", all_forcings)
+
 print("make forecast")
 final_state, predictions = model.unroll(
     initial_state,
@@ -112,16 +114,15 @@ print("final_state", final_state)
 print("predictions", predictions)
 
 print("predictions type:", type(predictions))
-print("predictions shape:", jax.tree_map(lambda x: x.shape, predictions))
+#print("predictions shape:", jax.tree_map(lambda x: x.shape, predictions))
 
 
 predictions_ds = model.data_to_xarray(predictions, times=times)
 #predictions_ds = model.data_to_xarray(predictions, times=None)
 
 print("predictions_ds", predictions_ds)
-print("predictions_ds shape:", predictions_ds.shape)
+#print("predictions_ds shape:", predictions_ds.shape)
 print("predictions_ds time:", predictions_ds.time)
-
 
 
 # create output_path if it doesn't exist
@@ -138,9 +139,18 @@ with open(f'{output_path}/model_state-{start_time}-{end_time}-{rng_key}.pkl', 'w
 # final_step, predictions is a tuple of the advanced state at time steps * timestamp,
 # and outputs with a leading time axis at the time-steps specified by steps, timedelta and start_with_input.
 
+try:
+    predictions_ds.to_netcdf(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.nc")
+except Exception as e:
+    print("Error saving to netcdf:", e)
+    # If the above fails, try saving as zarr
+    print("Trying to save as zarr")
 
-predictions_ds.to_netcdf(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.nc")
-predictions_ds.to_zarr(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.zarr", mode="w")
+try:
+    predictions_ds.to_zarr(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.zarr", mode="w")
+except Exception as e:
+    print("Error saving to zarr:", e)
+   
 
 
 

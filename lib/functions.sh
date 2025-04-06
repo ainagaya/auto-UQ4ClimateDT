@@ -129,3 +129,73 @@ create_final_output() {
     ${BINDIR}/grib_set -s edition=1 aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2 aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib1
     rm aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${DATE}-${TIME1}-${TIME2}.grib2
 }
+
+# Function to check if ICs already exist and skip if so
+check_existing_ics() {
+    local data_path="$1"
+    local regenerate="$2"
+
+    if [ "$regenerate" == "true" ]; then
+        echo "Regeneration of ICs is requested. Removing old ICs."
+        rm -rf "$data_path"
+    fi
+
+    if [ -d "$data_path" ] && [ "${regenerate,,}" != "true" ]; then
+        echo "ICs already exist for this chunk at $data_path. Skipping."
+        create_ics=false
+    else
+        echo "ICs do not exist or regeneration is requested. Proceeding to create ICs."
+        create_ics=true
+    fi
+
+    echo $create_ics
+}
+
+# Function to prepare ICs from FDB source
+prepare_ics_fdb() {
+    local hpc_rootdir="$1"
+    local fdb_home="$2"
+    local requests_dir="$3"
+    local start_date="$4"
+    local end_date="$5"
+    local data_path="$6"
+    local gsv_container="$7"
+
+    mkdir -p "$requests_dir"
+
+    echo "Generating FDB requests..."
+    python3 "$hpc_rootdir/runscripts/build_requests.py" \
+        --general "$hpc_rootdir/conf/general_request.yaml" \
+        --model "$hpc_rootdir/conf/neuralgcm/variables.yaml" \
+        --output "$requests_dir" \
+        --startdate "$start_date" \
+        --enddate "$end_date"
+
+    echo "Retrieving data from FDB..."
+    singularity exec \
+        --env FDB_HOME="$fdb_home" \
+        --env HPCROOTDIR="$hpc_rootdir" \
+        --bind "$fdb_home","$data_path","$hpc_rootdir/runscripts","$requests_dir","$PWD","$hpc_rootdir/conf" \
+        "$gsv_container" \
+        bash -c "python3 $hpc_rootdir/runscripts/retrieve.py \
+        --requests $requests_dir \
+        --output $data_path \
+        --translator $hpc_rootdir/conf/neuralgcm/translator.yaml"
+}
+
+# Function to prepare ICs from ERA5 source
+prepare_ics_era5() {
+    local hpc_rootdir="$1"
+    local logs_dir="$2"
+    local configfile="$3"
+    local sif_path="$4"
+
+    echo "Downloading ERA5 data..."
+    singularity exec \
+        --nv \
+        --bind "$hpc_rootdir/lib","$logs_dir" \
+        --env HPCROOTDIR="$hpc_rootdir" \
+        --env configfile="$configfile" \
+        "$sif_path" \
+        python3 "$hpc_rootdir/lib/download_era5.py" --config "$configfile"
+}
