@@ -6,3 +6,5 @@ data_inner_steps: 24 # process every 24th hour
 inner_steps: 24 # save model outputs once every 24 hours
 rng_key: "%MEMBER%"
 output_path: "%HPCROOTDIR%/outputs/%MODEL.NAME%/%SDATE%/%MEMBER%/"
+plots_path: "%HPCROOTDIR%/plots/%MODEL.NAME%/%SDATE%/"
+members: "%EXPERIMENT.MEMBERS%"

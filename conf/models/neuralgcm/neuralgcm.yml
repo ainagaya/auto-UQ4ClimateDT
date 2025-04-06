@@ -17,7 +17,7 @@ JOBS:
     NODES: 1
     PROCESSORS: 80
   POSTPROC:
-    FILE: templates/postproc_neuralgcm.sh,templates/config_post_neuralgcm.yml
+    FILE: templates/postproc_neuralgcm.sh,templates/config_neuralgcm.yml
     PLATFORM: "MARENOSTRUM5-LOGIN"
     DEPENDENCIES: SIM
     RUNNING: DATE

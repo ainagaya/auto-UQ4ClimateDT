@@ -20,7 +20,7 @@ JOBS:
       PROCESSORS: ["1", "2", "4", "8", "16", "32", "64"]
     CUSTOM_DIRECTIVES: "#SBATCH --gres=gpu:4"
   POSTPROC:
-    FILE: templates/postproc_neuralgcm.sh,templates/config_post_neuralgcm.yml
+    FILE: templates/postproc_neuralgcm.sh,templates/config_neuralgcm.yml
     PLATFORM: "MARENOSTRUM5-LOGIN"
     DEPENDENCIES: SIM
     RUNNING: DATE
