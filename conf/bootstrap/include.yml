@@ -3,6 +3,6 @@ DEFAULT:
     PRE:
       - "%PROJDIR%/conf/platforms.yml"
       - "%PROJDIR%/conf/general.yml"
-      - "%PROJDIR%/conf/models/%MODEL.NAME%.yml"
+      - "%PROJDIR%/conf/models/%MODEL.NAME%/%MODEL.NAME%.yml"
       - "%PROJDIR%/conf/ics/%MODEL.ICS%.yml"
       - "%PROJDIR%/conf/simulation/%MODEL.SIMULATION%.yml"

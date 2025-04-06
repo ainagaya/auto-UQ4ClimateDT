@@ -165,7 +165,7 @@ prepare_ics_fdb() {
 
     echo "Generating FDB requests..."
     python3 "$hpc_rootdir/runscripts/build_requests.py" \
-        --general "$hpc_rootdir/conf/general_request.yaml" \
+        --general "$hpc_rootdir/conf/ics/general_request.yaml" \
         --model "$hpc_rootdir/conf/neuralgcm/variables.yaml" \
         --output "$requests_dir" \
         --startdate "$start_date" \
@@ -197,5 +197,5 @@ prepare_ics_era5() {
         --env HPCROOTDIR="$hpc_rootdir" \
         --env configfile="$configfile" \
         "$sif_path" \
-        python3 "$hpc_rootdir/lib/download_era5.py" --config "$configfile"
+        python3 "$hpc_rootdir/runscripts/download_era5.py" --config "$configfile"
 }
