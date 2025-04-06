@@ -12,7 +12,7 @@ MODEL_NAME=%MODEL.NAME%
 AI_CHECKPOINT=%MODEL.CHECKPOINT_NAME%
 
 ## ERA5-PATH
-ERA5_PATH=%DIRS.ERA5_PATH%
+INI_DATA_PATH=%DIRS.INI_DATA_PATH%
 
 JOBNAME=%JOBNAME%
 EXPID=%DEFAULT.EXPID%
@@ -54,7 +54,7 @@ configfile=$logs_dir/config_neuralgcm_${JOBNAME_WITHOUT_EXPID}
 # Check if the ICs already exist or not for this
 # specific chunk. If they do, we skip the preparation
 # of the ICs. If they don't, we prepare them.
-ICs_path=${ERA5_PATH}/${MODEL_NAME}/${AI_CHECKPOINT}/${START_DATE}-${END_DATE}
+ICs_path=${INI_DATA_PATH}/${MODEL_NAME}/${AI_CHECKPOINT}/${START_DATE}-${END_DATE}
 if [ -d ${ICs_path} ]; then
     echo "ICs already exist for this chunk. Skipping."
 else

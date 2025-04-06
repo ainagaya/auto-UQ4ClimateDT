@@ -7,7 +7,7 @@ from functions import parse_arguments, read_config
 
 def define_variables(config):
     model_checkpoint = config['model_checkpoint']
-    era5_path = config['era5_path']
+    INI_DATA_PATH = config['INI_DATA_PATH']
     start_time = config['start_time']
     end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
@@ -15,10 +15,10 @@ def define_variables(config):
     plots_path = config['plots_path']
     members = config['members']
     output_path = config['output_path']
-    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, plots_path, members, output_path
+    return model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, plots_path, members, output_path
 args = parse_arguments()
 config = read_config(args.config)
-model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, plots_path, members, output_path = define_variables(config)
+model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, plots_path, members, output_path = define_variables(config)
 
 # Define folders containing the NetCDF files
 members = list(members)  # List of folder names

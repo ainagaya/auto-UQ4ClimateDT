@@ -1,0 +1,15 @@
+class: d1
+dataset: climate-dt
+experiment: ssp3-7.0
+activity: scenariomip
+model: ifs-fesom
+generation: 1
+realization: 1
+stream: clte
+type: fc
+resolution: standard
+expver: "0001"
+date: 20200101/to/20200102
+time: 0000/to/2300/by/0600
+grid: 1.0/1.0
+method: nn

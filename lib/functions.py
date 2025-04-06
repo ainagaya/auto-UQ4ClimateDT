@@ -24,11 +24,11 @@ def read_config(config_path):
 
 def define_variables(config):
     model_checkpoint = config['model_checkpoint']
-    era5_path = config['era5_path']
+    INI_DATA_PATH = config['INI_DATA_PATH']
     start_time = config['start_time']
     end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
     rng_key = int(config['rng_key'])
     output_path = config['output_path']
-    return model_checkpoint, era5_path, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path
+    return model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, rng_key, output_path
