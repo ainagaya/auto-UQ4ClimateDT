@@ -20,3 +20,4 @@ module load singularity
 
 singularity exec --nv --bind $HPCROOTDIR/lib --bind $logs_dir --env HPCROOTDIR=$HPCROOTDIR --env configfile=$configfile \
     /gpfs/scratch/ehpc204/bsc032376/neuralgcm_bsc_v1.0.sif python3 $HPCROOTDIR/lib/sim_neuralgcm.py -c $configfile
+
