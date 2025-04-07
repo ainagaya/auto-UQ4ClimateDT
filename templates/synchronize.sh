@@ -46,4 +46,5 @@ cd "${ROOTDIR}"/proj
 # else
 rsync_to_remote "${HPCUSER}" "${HPCHOST}" "${PROJDEST}"/lib "${HPCROOTDIR}"
 rsync_to_remote "${HPCUSER}" "${HPCHOST}" "${PROJDEST}"/runscripts "${HPCROOTDIR}"
+rsync_to_remote "${HPCUSER}" "${HPCHOST}" "${PROJDEST}"/conf "${HPCROOTDIR}"
 #fi

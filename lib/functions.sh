@@ -157,19 +157,18 @@ prepare_ics_fdb() {
     local fdb_home="$2"
     local requests_dir="$3"
     local start_date="$4"
-    local end_date="$5"
-    local data_path="$6"
-    local gsv_container="$7"
+    local data_path="$5"
+    local gsv_container="$6"
 
     mkdir -p "$requests_dir"
+    mkdir -p "$data_path"
 
     echo "Generating FDB requests..."
     python3 "$hpc_rootdir/runscripts/build_requests.py" \
         --general "$hpc_rootdir/conf/ics/general_request.yaml" \
-        --model "$hpc_rootdir/conf/neuralgcm/variables.yaml" \
+        --model "$hpc_rootdir/conf/models/neuralgcm/variables.yaml" \
         --output "$requests_dir" \
         --startdate "$start_date" \
-        --enddate "$end_date"
 
     echo "Retrieving data from FDB..."
     singularity exec \
@@ -180,7 +179,7 @@ prepare_ics_fdb() {
         bash -c "python3 $hpc_rootdir/runscripts/retrieve.py \
         --requests $requests_dir \
         --output $data_path \
-        --translator $hpc_rootdir/conf/neuralgcm/translator.yaml"
+        --translator $hpc_rootdir/conf/models/neuralgcm/translator.yaml"
 }
 
 # Function to prepare ICs from ERA5 source

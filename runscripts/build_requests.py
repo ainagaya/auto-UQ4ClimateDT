@@ -23,7 +23,11 @@ def _parse_args():
     return parser.parse_args()
 
 def generate_date(startdate, enddate):
-    return f"{startdate}/to/{enddate}"
+    # If enddate is not specified, just use the startdate
+    if not enddate:
+        return startdate
+    else:
+        return f"{startdate}/to/{enddate}"
 
 def main():
     args = _parse_args()

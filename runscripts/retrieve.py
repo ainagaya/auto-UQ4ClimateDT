@@ -41,19 +41,19 @@ def save_data(data, output_path, filename):
     data.to_netcdf(os.path.join(output_path, filename))
 
 
-def estimate_sciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
+def estimate_ciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
     vertical_sum = liquid_profile.sum(dim="level")
     vertical_fraction = liquid_profile / vertical_sum.where(vertical_sum != 0, np.nan)
     specific_ice = total_ice * vertical_fraction
     return specific_ice.fillna(0)
 
-def estimate_sciwc_constant(total_ice: xr.DataArray, level_dim: int) -> xr.DataArray:
+def estimate_ciwc_constant(total_ice: xr.DataArray, level_dim: int) -> xr.DataArray:
     levels = np.arange(level_dim)
     return (total_ice / level_dim).expand_dims({"level": levels}).transpose("level", ...)
 
-def interpolate_data(data, levels, method="constant", era5_ds=None):
+def interpolate_data(data, levels, method="constant"):
     """
-    Interpolate or generate `specific_cloud_ice_water_content` (sciwc)
+    Interpolate or generate `specific_cloud_ice_water_content` (ciwc)
     from 2D data or interpolate 3D data to target levels.
     
     Args:
@@ -76,28 +76,28 @@ def interpolate_data(data, levels, method="constant", era5_ds=None):
         if method == "approximate":
             threed_data = np.zeros(new_shape, dtype=np.float64)
             for t in range(time_dim):
-                threed_data[t] = estimate_sciwc_approximate(
+                threed_data[t] = estimate_ciwc_approximate(
                     liquid_profile=data["clwc"][t],  # 3D: (level, lat, lon)
                     total_ice=data["tciw"][t]       # 2D: (lat, lon)
                 ).values
         elif method == "constant":
             threed_data = np.zeros(new_shape, dtype=np.float64)
             for t in range(time_dim):
-                threed_data[t] = estimate_sciwc_constant(
+                threed_data[t] = estimate_ciwc_constant(
                     total_ice=data["tciw"][t], level_dim=len(levels)
                 ).values
         else:
             raise ValueError(f"Unknown method '{method}'")
 
         ds_new = xr.Dataset({
-            "sciwc": (("time", "level", "lat", "lon"), threed_data)
+            "specific_cloud_ice_water_content": (("time", "level", "lat", "lon"), threed_data)
         }, coords={
             "time": data["time"],
             "level": levels,
             "lat": data["lat"],
             "lon": data["lon"]
         })
-        ds_new["sciwc"].attrs = {
+        ds_new["specific_cloud_ice_water_content"].attrs = {
             "units": "kg/kg",
             "long_name": "specific_cloud_ice_water_content"
         }
