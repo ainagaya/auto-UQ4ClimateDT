@@ -69,6 +69,12 @@ print(regridded.isnull().sum())
 
 data = xarray_utils.fill_nan_with_nearest(regridded)
 
+# Save the regridded data to a new zarr file and a netcdf file
+path_to_save_zarr = f"{INI_DATA_PATH}/regridded"
+data.to_zarr(path_to_save_zarr, mode="w")
+path_to_save_nc = f"{INI_DATA_PATH}/regridded.nc"
+data.to_netcdf(path_to_save_nc)
+
 start_date = datetime.strptime(start_time, '%Y-%m-%d')
 print("start_date", start_date)
 
@@ -95,6 +101,8 @@ print("initialize model state")
 inputs = model.inputs_from_xarray(data.isel(time=0))
 input_forcings = model.forcings_from_xarray(data.isel(time=0))
 initial_state = model.encode(inputs, input_forcings, rng_key)
+
+print("initial_state", initial_state)
 
 print("use persistence for forcing variables (SST and sea ice cover)")
 all_forcings = model.forcings_from_xarray(data.head(time=1))

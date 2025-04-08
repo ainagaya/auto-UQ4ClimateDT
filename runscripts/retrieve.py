@@ -40,6 +40,13 @@ def save_data(data, output_path, filename):
     """Save data to a NetCDF file."""
     data.to_netcdf(os.path.join(output_path, filename))
 
+def fix_sst(data):
+    """ Add 273 to SST variable to convert to Kelvin """
+    if "sea_surface_temperature" in data.variables:
+        sst = data["sea_surface_temperature"]
+        sst.attrs["units"] = "K"
+        sst.values += 273.15
+    return data
 
 def estimate_ciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
     vertical_sum = liquid_profile.sum(dim="level")
@@ -145,9 +152,12 @@ def process_requests(requests_path, output_path, translator_path=None):
             data = interpolate_data(data, levels)
 
         data = rename_variables(data, translator_file)
+        data = fix_sst(data)
         save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
         merged_dataset = xr.merge([merged_dataset, data], compat="override")
 
+    # transpose the merged dataset
+    merged_dataset = merged_dataset.transpose("time", "longitude", "latitude", "level")
     merged_dataset.to_zarr(output_path)
 
 
