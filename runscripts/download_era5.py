@@ -15,7 +15,7 @@ def define_variables(config):
     model_checkpoint = config['model_checkpoint']
     INI_DATA_PATH = config['INI_DATA_PATH']
     start_time = config['start_time']
-    end_time = config['end_time']
+    end_time = start_time
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
     output_path = config['output_path']
