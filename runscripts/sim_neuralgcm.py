@@ -16,6 +16,11 @@ from datetime import datetime
 
 from functions import parse_arguments, read_config, define_variables
 
+import logging
+
+# Set logging level to DEBUG (for most detailed output)
+logging.basicConfig(level=logging.DEBUG)
+
 def validate_config(config):
     required_keys = ['model_checkpoint', 'INI_DATA_PATH', 'start_time', 'end_time', 'data_inner_steps', 'inner_steps']
     for key in required_keys:
@@ -61,12 +66,6 @@ regridder = horizontal_interpolation.ConservativeRegridder(
 
 regridded = xarray_utils.regrid(data_original, regridder)
 
-# fill nans
-print(regridded)
-
-# look for nan values
-print(regridded.isnull().sum())
-
 data = xarray_utils.fill_nan_with_nearest(regridded)
 
 # Save the regridded data to a new zarr file and a netcdf file
@@ -102,12 +101,8 @@ inputs = model.inputs_from_xarray(data.isel(time=0))
 input_forcings = model.forcings_from_xarray(data.isel(time=0))
 initial_state = model.encode(inputs, input_forcings, rng_key)
 
-print("initial_state", initial_state)
-
-print("use persistence for forcing variables (SST and sea ice cover)")
 all_forcings = model.forcings_from_xarray(data.head(time=1))
 
-print("all_forcings", all_forcings)
 
 print("make forecast")
 final_state, predictions = model.unroll(

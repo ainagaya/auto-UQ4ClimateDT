@@ -16,7 +16,7 @@ JOBNAME=%JOBNAME%
 EXPID=%DEFAULT.EXPID%
 GSV_CONTAINER=%GSV.CONTAINER%
 
-FDB_HOME=/gpfs/projects/ehpc01/dte/fdb
+FDB_HOME=%DIRS.FDB_PATH%
 SIF_PATH=/gpfs/scratch/ehpc204/bsc032376/neuralgcm_bsc_v1.0.sif
 
 # Derived paths
