@@ -8,7 +8,7 @@ PLATFORMS:
     QUEUE: gp_debug
     SCRATCH_DIR: /gpfs/scratch
     FDB_DIR: /gpfs/scratch/ehpc01/experiments
-    FDB_PROD: /gpfs/projects/ehpc01/dte/fdb
+    FDB_PROD: /gpfs/projects/ehpc01/fdb_prod_old
     ADD_PROJECT_TO_HOST: False
     TEMP_DIR: ''
     PROCESSORS_PER_NODE: 112
@@ -23,7 +23,7 @@ PLATFORMS:
     QUEUE: acc_debug
     SCRATCH_DIR: /gpfs/scratch
     FDB_DIR: /gpfs/scratch/ehpc01/experiments
-    FDB_PROD: /gpfs/projects/ehpc01/dte/fdb
+    FDB_PROD: /gpfs/projects/ehpc01/fdb_prod_old
     ADD_PROJECT_TO_HOST: False
     TEMP_DIR: ''
     PROCESSORS_PER_NODE: 80
@@ -37,7 +37,7 @@ PLATFORMS:
     QUEUE: ''
     SCRATCH_DIR: /gpfs/scratch
     FDB_DIR: /gpfs/scratch/ehpc01/experiments
-    FDB_PROD: /gpfs/projects/ehpc01/dte/fdb
+    FDB_PROD: /gpfs/projects/ehpc01/fdb_prod_old
     ADD_PROJECT_TO_HOST: False
     TEMP_DIR: ''
     PROCESSORS_PER_NODE: 112
