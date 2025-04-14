@@ -14,7 +14,7 @@ autosubmit expid \
   --description "auto-aifs" \
   --HPC MareNostrum5ACC \
   --minimal_configuration \
-  --git_as_conf conf/ \
+  --git_as_conf conf/bootstrap/ \
   --git_repo git@github.com:ainagaya/auto-UQ4ClimateDT.git \
   --git_branch main
 
