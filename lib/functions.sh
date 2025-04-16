@@ -159,6 +159,7 @@ prepare_ics_fdb() {
     local start_date="$4"
     local data_path="$5"
     local gsv_container="$6"
+    local end_date="$7"
 
     mkdir -p "$requests_dir"
     mkdir -p "$data_path"
@@ -169,6 +170,7 @@ prepare_ics_fdb() {
         --model "$hpc_rootdir/conf/models/neuralgcm/variables.yaml" \
         --output "$requests_dir" \
         --startdate "$start_date" \
+        --enddate "$end_date"
 
     echo "Retrieving data from FDB..."
     singularity exec \

@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import xarray as xr
 from gsv.retriever import GSVRetriever
+# from dinosaur import xarray_utils
 
 
 def parse_args():
@@ -114,7 +115,6 @@ def interpolate_data(data, levels, method="constant"):
 
     return ds_new
 
-
 def rename_variables(data, translator_file=None):
     """Rename variables based on standard names and translator file."""
     data_copy = data.copy()
@@ -129,6 +129,28 @@ def rename_variables(data, translator_file=None):
                 translated_name = translator_file[renamed_name]
                 data_copy = data_copy.rename({renamed_name: translated_name})
     return data_copy
+
+def build_iso_time(date, time) -> str:
+    """
+    Build an ISO 8601 datetime string from MARS-style date and time.
+    Supports int or list input.
+
+    Args:
+        date (int or list): Date in YYYYMMDD format.
+        time (int or list): Time in HHMM format.
+
+    Returns:
+        str: ISO 8601 datetime string (e.g., '1998-01-01T00:00')
+    """
+    if isinstance(date, list):
+        date = date[0]
+    if isinstance(time, list):
+        time = time[0]
+
+    date_str = str(date)
+    time_str = f"{int(time):04d}"  # ensures 4-digit zero-padded string
+
+    return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}T{time_str[:2]}:{time_str[2:]}"
 
 
 def process_requests(requests_path, output_path, translator_path=None):
@@ -145,6 +167,12 @@ def process_requests(requests_path, output_path, translator_path=None):
         request = load_request(os.path.join(requests_path, request_file))
         mars_keys = request["mars-keys"]
         data = retrieve_data(gsv, mars_keys)
+
+        # mars_keys.date = 19980101
+        # mars_keys.time = 0000
+        start_time = build_iso_time(mars_keys["date"], mars_keys["time"])
+        end_time = start_time
+
         save_data(data, output_path, f"raw-{count}.nc")
 
         if "levelist_interpol" in request:
@@ -152,7 +180,8 @@ def process_requests(requests_path, output_path, translator_path=None):
             data = interpolate_data(data, levels)
 
         data = rename_variables(data, translator_file)
-        data = fix_sst(data)
+        # data = fix_sst(data)
+        #data = time_shift_and_slice(data, start_time, end_time)
         save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
         merged_dataset = xr.merge([merged_dataset, data], compat="override")
 
