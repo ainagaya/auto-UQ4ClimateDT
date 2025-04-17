@@ -15,7 +15,7 @@ def define_variables(config):
     model_checkpoint = config['model_checkpoint']
     INI_DATA_PATH = config['INI_DATA_PATH']
     start_time = config['start_time']
-    end_time = start_time
+    end_time = config['end_time']
     data_inner_steps = config['data_inner_steps']
     inner_steps = config['inner_steps']
     output_path = config['output_path']
@@ -41,7 +41,18 @@ full_era5 = xarray.open_zarr(gcs.get_mapper(INI_DATA_PATH_remote), chunks=None)
 
 ## M'ho puc baixar
 
-eval_era5 = full_era5[model.input_variables + model.forcing_variables].sel(time=slice(start_time, end_time, data_inner_steps)).compute()
+# eval_era5 = full_era5[model.input_variables + model.forcing_variables].sel(time=slice(start_time, end_time, data_inner_steps)).compute()
+
+# Step 1: Select the range
+selected = full_era5[model.input_variables + model.forcing_variables].sel(time=slice(start_time, end_time))
+
+print("selected", selected)
+
+# Step 2: Subsample every 24 hours
+eval_era5 = selected.isel(time=slice(0, None, data_inner_steps)).compute()
+
+print("eval_era5", eval_era5)
+
 
 # sliced_era5 = (
 #     full_era5
