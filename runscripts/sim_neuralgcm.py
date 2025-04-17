@@ -3,6 +3,7 @@ import jax
 import numpy as np
 import pickle
 import xarray
+import cftime
 
 from dinosaur import horizontal_interpolation
 from dinosaur import spherical_harmonic
@@ -120,6 +121,30 @@ data_sliced = data_shift
 regridded = xarray_utils.regrid(data_sliced, regridder)
 
 data = xarray_utils.fill_nan_with_nearest(regridded)
+
+# Define calendar and new reference date
+calendar = "proleptic_gregorian"
+new_reference = cftime.DatetimeProlepticGregorian(1900, 1, 1)
+
+# Reconstruct decoded times with the correct calendar
+decoded_times = [cftime.DatetimeProlepticGregorian(1988, 2, 2) + np.timedelta64(i, 'D') for i in range(len(data.time))]
+
+# Compute new time values in hours since reference
+new_time_hours = np.array([(t - new_reference).total_seconds() / 3600 for t in decoded_times])
+#new_time_hours = np.array(
+#    [(t - new_reference).total_seconds() / 3600 for t in decoded_times],
+#    dtype='int64'
+#)
+
+# Replace the time coordinate with new values and update attributes
+data['time'] = ('time', new_time_hours)
+data['time'].attrs['units'] = "hours since 1900-01-01"
+data['time'].attrs['calendar'] = "proleptic_gregorian"
+# Ensure correct encoding (double without FillValue)
+data['time'].encoding.update({
+    "dtype": "float64",
+    "_FillValue": None  # Important: remove NaN fill value
+})
 
 # Save the regridded data to a new zarr file and a netcdf file
 path_to_save_zarr = f"{INI_DATA_PATH}/regridded"
