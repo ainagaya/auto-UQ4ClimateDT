@@ -41,29 +41,31 @@ full_era5 = xarray.open_zarr(gcs.get_mapper(INI_DATA_PATH_remote), chunks=None)
 
 ## M'ho puc baixar
 
-sliced_era5 = (
-    full_era5
-    [model.input_variables + model.forcing_variables]
-    .pipe(
-        xarray_utils.selective_temporal_shift,
-        variables=model.forcing_variables,
-        time_shift='24 hours',
-    )
-    .sel(time=slice(start_time, end_time, data_inner_steps))
-    .compute()
-)
+eval_era5 = full_era5[model.input_variables + model.forcing_variables].sel(time=slice(start_time, end_time, data_inner_steps)).compute()
 
-era5_grid = spherical_harmonic.Grid(
-    latitude_nodes=full_era5.sizes['latitude'],
-    longitude_nodes=full_era5.sizes['longitude'],
-    latitude_spacing=xarray_utils.infer_latitude_spacing(full_era5.latitude),
-    longitude_offset=xarray_utils.infer_longitude_offset(full_era5.longitude),
-)
-regridder = horizontal_interpolation.ConservativeRegridder(
-    era5_grid, model.data_coords.horizontal, skipna=True
-)
-eval_era5 = xarray_utils.regrid(sliced_era5, regridder)
-eval_era5 = xarray_utils.fill_nan_with_nearest(eval_era5)
+# sliced_era5 = (
+#     full_era5
+#     [model.input_variables + model.forcing_variables]
+#     .pipe(
+#         xarray_utils.selective_temporal_shift,
+#         variables=model.forcing_variables,
+#         time_shift='24 hours',
+#     )
+#     .sel(time=slice(start_time, end_time, data_inner_steps))
+#     .compute()
+# )
+
+# era5_grid = spherical_harmonic.Grid(
+#     latitude_nodes=full_era5.sizes['latitude'],
+#     longitude_nodes=full_era5.sizes['longitude'],
+#     latitude_spacing=xarray_utils.infer_latitude_spacing(full_era5.latitude),
+#     longitude_offset=xarray_utils.infer_longitude_offset(full_era5.longitude),
+# )
+# regridder = horizontal_interpolation.ConservativeRegridder(
+#     era5_grid, model.data_coords.horizontal, skipna=True
+# )
+# eval_era5 = xarray_utils.regrid(sliced_era5, regridder)
+# eval_era5 = xarray_utils.fill_nan_with_nearest(eval_era5)
 
 # save data to local disk in zarr
 eval_era5.to_zarr(f"{INI_DATA_PATH}", mode='w')
