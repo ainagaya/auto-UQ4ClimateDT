@@ -11,8 +11,20 @@ MODEL:
 JOBS:
   SIM:
     FILE: templates/sim_neuralgcm.sh,templates/config_neuralgcm.yml
+    FOR:
+      NAMES: [["temperature", "sea_ice_cover", "u_component_of_wind", "v_component_of_wind", "specific_humidity", "specific_cloud_ice_water_content", "geopotential", "specific_cloud_liquid_water_content", "sea_surface_temperature"]]
+      ICS_PATH:
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_temperature
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_sea_ice_cover
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_u_component_of_wind
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_v_component_of_wind
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_specific_humidity
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_specific_cloud_ice_water_content
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_geopotential
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_specific_cloud_liquid_water_content
+        - /gpfs/scratch/ehpc204/bsc032376/ics/mixed/fdb_var_sea_surface_temperature
     PLATFORM: "MARENOSTRUM5ACC"
-    DEPENDENCIES: SIM-1 PREPARE_ICS
+    DEPENDENCIES: SIM-1
     RUNNING: CHUNK
     NODES: 1
     PROCESSORS: 80
