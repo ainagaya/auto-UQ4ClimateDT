@@ -175,11 +175,16 @@ print("Will run for", outer_steps, "steps")
 
 print("initialize model state")
 
-inputs = model.inputs_from_xarray(data.isel(time=0))
-input_forcings = model.forcings_from_xarray(data.isel(time=0))
-initial_state = model.encode(inputs, input_forcings, rng_key)
+print("data at line 178", data)
 
+inputs = model.inputs_from_xarray(data.isel(time=0))
+print("inputs", inputs)
+input_forcings = model.forcings_from_xarray(data.isel(time=0))
+print("input_forcings", input_forcings)
+initial_state = model.encode(inputs, input_forcings, rng_key)
+print("initial_state", initial_state)
 all_forcings = model.forcings_from_xarray(data.head(time=1))
+print("all_forcings", all_forcings)
 
 print("make forecast")
 final_state, predictions = model.unroll(

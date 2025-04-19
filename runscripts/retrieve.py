@@ -186,7 +186,7 @@ def process_requests(requests_path, output_path, translator_path=None):
         merged_dataset = xr.merge([merged_dataset, data], compat="override")
 
     # transpose the merged dataset
-    merged_dataset = merged_dataset.transpose("time", "level", "longitude", "latitude")
+    merged_dataset = merged_dataset.transpose("time", "level",  "latitude", "longitude")
     merged_dataset.to_zarr(output_path)
 
 
