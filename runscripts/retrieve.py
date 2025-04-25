@@ -50,16 +50,19 @@ def fix_sst(data):
     return data
 
 def estimate_ciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
-    vertical_sum = liquid_profile.sum(dim="level")
-    vertical_fraction = liquid_profile / vertical_sum.where(vertical_sum != 0, np.nan)
+    vertical_sum = liquid_profile.sum(dim="level", keep_attrs=True)
+    safe_vertical_sum = xr.where(vertical_sum > 1e-10, vertical_sum, np.nan)
+    vertical_fraction = liquid_profile / safe_vertical_sum
     specific_ice = total_ice * vertical_fraction
-    return specific_ice.fillna(0)
+    specific_ice = specific_ice.where(specific_ice >= 0, 0)
+    specific_ice = specific_ice.fillna(0)
+    return specific_ice
 
 def estimate_ciwc_constant(total_ice: xr.DataArray, level_dim: int) -> xr.DataArray:
     levels = np.arange(level_dim)
     return (total_ice / level_dim).expand_dims({"level": levels}).transpose("level", ...)
 
-def interpolate_data(data, levels, method="constant"):
+def interpolate_data(data, levels, clwc_store, method="approximate"):
     """
     Interpolate or generate `specific_cloud_ice_water_content` (ciwc)
     from 2D data or interpolate 3D data to target levels.
@@ -77,17 +80,19 @@ def interpolate_data(data, levels, method="constant"):
 
     if "level" not in data.dims:
         logging.info("Adding level dimension to variable tciw")
-        twod_data = data["tciw"]  # 2D: (time, lat, lon)
-        time_dim, lat_dim, lon_dim = twod_data.shape
-        new_shape = (time_dim, len(levels), lat_dim, lon_dim)
+        twod_data = data["tciw"]
+        print(twod_data.shape)
+        time_dim, lon_dim, lat_dim = twod_data.shape
+        new_shape = (time_dim, lon_dim, lat_dim, len(levels))
 
         if method == "approximate":
             threed_data = np.zeros(new_shape, dtype=np.float64)
             for t in range(time_dim):
                 threed_data[t] = estimate_ciwc_approximate(
-                    liquid_profile=data["clwc"][t],  # 3D: (level, lat, lon)
+                    liquid_profile=clwc_store[t],  # 3D: (level, lat, lon)
                     total_ice=data["tciw"][t]       # 2D: (lat, lon)
                 ).values
+                print(threed_data)
         elif method == "constant":
             threed_data = np.zeros(new_shape, dtype=np.float64)
             for t in range(time_dim):
@@ -97,8 +102,10 @@ def interpolate_data(data, levels, method="constant"):
         else:
             raise ValueError(f"Unknown method '{method}'")
 
+        print("data", data)
+        print("lat", data["lat"])
         ds_new = xr.Dataset({
-            "specific_cloud_ice_water_content": (("time", "level", "lat", "lon"), threed_data)
+            "specific_cloud_ice_water_content": (("time", "lat", "lon", "level"), threed_data)
         }, coords={
             "time": data["time"],
             "level": levels,
@@ -109,11 +116,13 @@ def interpolate_data(data, levels, method="constant"):
             "units": "kg/kg",
             "long_name": "specific_cloud_ice_water_content"
         }
+        print(ds_new)
 
     else:
         ds_new = data.interp(level=levels)
 
     return ds_new
+
 
 def rename_variables(data, translator_file=None):
     """Rename variables based on standard names and translator file."""
@@ -158,6 +167,7 @@ def process_requests(requests_path, output_path, translator_path=None):
     gsv = GSVRetriever()
     merged_dataset = xr.Dataset()
     translator_file = None
+    clwc_store = []
 
     if translator_path and os.path.exists(translator_path):
         translator_file = load_request(translator_path)
@@ -177,7 +187,10 @@ def process_requests(requests_path, output_path, translator_path=None):
 
         if "levelist_interpol" in request:
             levels = request["levelist_interpol"]
-            data = interpolate_data(data, levels)
+            data = interpolate_data(data, levels, clwc_store, method="approximate")
+
+        if "clwc" in data:
+            clwc_store = data["clwc"]
 
         data = rename_variables(data, translator_file)
         # data = fix_sst(data)
