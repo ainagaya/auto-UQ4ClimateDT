@@ -160,6 +160,7 @@ prepare_ics_fdb() {
     local data_path="$5"
     local gsv_container="$6"
     local end_date="$7"
+    local model="$8"
 
     mkdir -p "$requests_dir"
     mkdir -p "$data_path"
@@ -167,7 +168,7 @@ prepare_ics_fdb() {
     echo "Generating FDB requests..."
     python3 "$hpc_rootdir/runscripts/build_requests.py" \
         --general "$hpc_rootdir/conf/ics/general_request.yaml" \
-        --model "$hpc_rootdir/conf/models/neuralgcm/variables.yaml" \
+        --model "$hpc_rootdir/conf/models/$model/variables.yaml" \
         --output "$requests_dir" \
         --startdate "$start_date" \
         --enddate "$end_date"
