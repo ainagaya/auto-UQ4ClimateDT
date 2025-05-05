@@ -122,12 +122,15 @@ regridded = xarray_utils.regrid(data_sliced, regridder)
 
 data = xarray_utils.fill_nan_with_nearest(regridded)
 
-# Define calendar and new reference date
+# Define calendar and new reference date matching era 5
 calendar = "proleptic_gregorian"
 new_reference = cftime.DatetimeProlepticGregorian(1900, 1, 1)
 
 # Reconstruct decoded times with the correct calendar
-decoded_times = [cftime.DatetimeProlepticGregorian(1988, 2, 2) + np.timedelta64(i, 'D') for i in range(len(data.time))]
+year = data.time.dt.year
+month = data.time.dt.month
+day = data.time.dt.day
+decoded_times = [cftime.DatetimeProlepticGregorian(year, month, day) + np.timedelta64(i, 'D') for i in range(len(data.time))]
 
 # Compute new time values in hours since reference
 new_time_hours = np.array([(t - new_reference).total_seconds() / 3600 for t in decoded_times])
