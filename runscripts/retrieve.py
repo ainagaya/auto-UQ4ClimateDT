@@ -50,13 +50,30 @@ def fix_sst(data):
     return data
 
 def estimate_ciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
-    vertical_sum = liquid_profile.sum(dim="level", keep_attrs=True)
-    safe_vertical_sum = xr.where(vertical_sum > 1e-10, vertical_sum, np.nan)
-    vertical_fraction = liquid_profile / safe_vertical_sum
+    # Ensure input data is float32
+    liquid_profile = liquid_profile.astype("float32")
+    total_ice = total_ice.astype("float32")
+
+    # Fill missing liquid with 0.0 (float32)
+    liquid_profile = liquid_profile.fillna(np.float32(0.0))
+
+    # Compute vertical sum safely
+    vertical_sum = liquid_profile.sum(dim="level")
+
+    # Only divide where the sum is safe, otherwise set NaN
+    vertical_sum_safe = xr.where(vertical_sum > np.float32(1e-6), vertical_sum, np.nan)
+    vertical_fraction = liquid_profile / vertical_sum_safe
+
+    # Now compute the specific ice
     specific_ice = total_ice * vertical_fraction
-    specific_ice = specific_ice.where(specific_ice >= 0, 0)
-    specific_ice = specific_ice.fillna(0)
-    return specific_ice
+
+    # Fill remaining NaNs (from bad divisions) with 0.0 (float32)
+    specific_ice = specific_ice.fillna(np.float32(0.0))
+
+    # Remove any tiny negatives just in case
+    specific_ice = specific_ice.clip(min=np.float32(0.0))
+
+    return specific_ice / 400
 
 def estimate_ciwc_constant(total_ice: xr.DataArray, level_dim: int) -> xr.DataArray:
     levels = np.arange(level_dim)
@@ -116,6 +133,9 @@ def interpolate_data(data, levels, clwc_store, method="approximate"):
             "units": "kg/kg",
             "long_name": "specific_cloud_ice_water_content"
         }
+        ds_new["specific_cloud_ice_water_content"] = ds_new["specific_cloud_ice_water_content"].chunk(
+            {"level": 37, "lat": 180, "lon": 360})
+
         print(ds_new)
 
     else:

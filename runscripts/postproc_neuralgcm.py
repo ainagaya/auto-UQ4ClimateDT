@@ -1,5 +1,5 @@
 import xarray as xr
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import glob
 import os
 
@@ -16,77 +16,103 @@ def define_variables(config):
     members = config['members']
     output_path = config['output_path']
     return model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, plots_path, members, output_path
+
 args = parse_arguments()
 config = read_config(args.config)
 model_checkpoint, INI_DATA_PATH, start_time, end_time, data_inner_steps, inner_steps, plots_path, members, output_path = define_variables(config)
 
-# Define folders containing the NetCDF files
-members = list(members)  # List of folder names
-# directories will be output_dir/members[i]/
+
+# We have to go one directory up to get the correct path
+output_path = os.path.abspath(os.path.join(output_path, os.pardir))
+
+members = list(members)
 folders = [os.path.join(output_path, member) for member in members]
 
-# Define file pattern inside each folder
-file_pattern = f"model_state-{start_time}-{end_time}-*.nc"  # Adjust as needed
+file_pattern = f"model_state-{start_time}-{end_time}-*.nc"
+selected_level = 1
 
-# Define selected level
-selected_level = 1  # Use level 1 for all variables
+os.makedirs(plots_path, exist_ok=True)
 
-os.makedirs(plots_path, exist_ok=True)  # Create directory if it doesn't exist
-
-# Collect all unique variable names from all files
+# Collect all unique variable names
 variables = set()
 for folder in folders:
     file_list = sorted(glob.glob(os.path.join(folder, file_pattern)))
     if file_list:
-        ds = xr.open_dataset(file_list[0])  # Open the first file in the folder
-        variables.update(ds.data_vars.keys())  # Add all variable names
+        ds = xr.open_dataset(file_list[0])
+        variables.update(ds.data_vars.keys())
+
+# Load original data
+original_ds = xr.open_dataset(INI_DATA_PATH)
 
 # Process each variable
 for var_name in sorted(variables):
-    plt.figure(figsize=(10, 5))  # Create a new figure for each variable
+    fig = go.Figure()
 
     for folder in folders:
-        folder_label = os.path.basename(folder)  # Extracts folder name (e.g., "1", "2", "3")
-        file_list = sorted(glob.glob(os.path.join(folder, file_pattern)))  # Get all matching files
+        folder_label = os.path.basename(folder)
+        file_list = sorted(glob.glob(os.path.join(folder, file_pattern)))
 
         if not file_list:
             print(f"No files found in {folder}/")
-            continue  # Skip this folder if no files are found
+            continue
 
         for file_path in file_list:
-            # Load dataset
             ds = xr.open_dataset(file_path)
 
-            # Check if the variable exists in this dataset
             if var_name not in ds:
                 print(f"Skipping {var_name} in {folder}: Variable not found.")
-                continue  # Skip this variable if it's missing
+                continue
 
-            var = ds[var_name]  # Select variable
+            var = ds[var_name]
 
-            # Ensure level exists before selecting
             if "level" in var.dims:
                 var_at_level = var.sel(level=selected_level)
             else:
                 print(f"Skipping {var_name} in {folder}: No 'level' dimension.")
-                continue  # Skip this variable if it doesn't have a level dimension
+                continue
 
-            # Compute spatial average (assuming lat/lon are spatial dimensions)
             var_mean = var_at_level.mean(dim=["latitude", "longitude"])
 
-            # Plot time series
-            var_mean.plot(linestyle="-", marker="o", label=f"Run {folder_label}")
+            fig.add_trace(go.Scatter(
+                x=var_mean['time'].values,
+                y=var_mean.values,
+                mode='lines+markers',
+                name=f"Run {folder_label}",
+                line=dict(width=2),
+                marker=dict(size=4),
+            ))
+
+    # Add original model trajectory
+    if var_name in original_ds:
+        original_var = original_ds[var_name]
+        if "level" in original_var.dims:
+            original_at_level = original_var.sel(level=selected_level)
+            original_mean = original_at_level.mean(dim=["latitude", "longitude"])
+
+            fig.add_trace(go.Scatter(
+                x=original_mean['time'].values,
+                y=original_mean.values,
+                mode='lines',
+                name="Original Data",
+                line=dict(color="black", width=3, dash="dash"),
+            ))
+        else:
+            print(f"Skipping original {var_name}: No 'level' dimension.")
+    else:
+        print(f"Original data missing variable: {var_name}")
 
     # Final plot settings
-    plt.xlabel("Time")
-    plt.ylabel(var.attrs.get("units", "Unknown"))
-    plt.title(f"Time Evolution of {var_name} at Level {selected_level}")
-    plt.legend()
-    plt.grid()
+    fig.update_layout(
+        title=f"Time Evolution of {var_name} at Level {selected_level}",
+        xaxis_title="Time",
+        yaxis_title=original_ds[var_name].attrs.get("units", "Unknown") if var_name in original_ds else "Unknown",
+        legend=dict(title="Legend"),
+        template="plotly_white",
+        width=1000,
+        height=600,
+    )
 
-    # Save the plot
-    plot_filename = f"{plots_path}/{var_name}.png"
-    plt.savefig(plot_filename, dpi=300)
-    plt.close()  # Close the figure to free memory
-
+    # Save plot
+    plot_filename = f"{plots_path}/{var_name}.html"
+    fig.write_html(plot_filename)
     print(f"Saved plot: {plot_filename}")

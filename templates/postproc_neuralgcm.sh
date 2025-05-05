@@ -15,4 +15,4 @@ source ${HPCROOTDIR}/lib/MARENOSTRUM5/util.sh
 conda_init
 conda activate /gpfs/scratch/bsc32/bsc032376/envs/neuralgcm
 
-python3 $HPCROOTDIR/lib/postproc_neuralgcm.py -c $configfile
+python3 $HPCROOTDIR/runscripts/postproc_neuralgcm.py -c $configfile
