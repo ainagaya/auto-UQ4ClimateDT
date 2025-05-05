@@ -42,7 +42,7 @@ if [ "$create_ics" = "false" ]; then
     echo "ICs already exist for this chunk at $DATA_PATH. Skipping."
 else
     if [ "$IC_SOURCE" = "fdb" ]; then
-        prepare_ics_fdb $HPCROOTDIR $FDB_HOME $REQUESTS_DIR $CHUNK_START_DATE $DATA_PATH $GSV_CONTAINER
+        prepare_ics_fdb $HPCROOTDIR $FDB_HOME $REQUESTS_DIR $CHUNK_START_DATE $DATA_PATH $GSV_CONTAINER $CHUNK_END_DATE
     elif [ "$IC_SOURCE" = "era5" ]; then
         prepare_ics_era5 $HPCROOTDIR $LOGS_DIR $CONFIGFILE $SIF_PATH
     else

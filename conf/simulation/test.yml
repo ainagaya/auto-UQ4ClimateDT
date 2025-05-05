@@ -1,8 +1,9 @@
 EXPERIMENT:
   #DATELIST: 2035092306
-  DATELIST: 202301[01 11 21]
+  #DATELIST: 202301[01 11 21]
+  DATELIST: 198801[01 11 21]
   # Supply the list of members. LIST: fc0 fc1 fc2 fc3 fc4
-  MEMBERS: "1 2 3"
+  MEMBERS: "1 2 3 4 5 6 7 8 9 10"
   # Chunk size unit. STRING: hour, day, month, year
   CHUNKSIZEUNIT: day
   # Chunk size. NUMERIC: 4, 6, 12

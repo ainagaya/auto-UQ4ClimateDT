@@ -3,6 +3,7 @@ import jax
 import numpy as np
 import pickle
 import xarray
+import cftime
 
 from dinosaur import horizontal_interpolation
 from dinosaur import spherical_harmonic
@@ -12,7 +13,7 @@ import os
 
 import argparse
 import yaml
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from functions import parse_arguments, read_config, define_variables
 
@@ -27,6 +28,31 @@ def validate_config(config):
         if key not in config:
             raise ValueError(f'Key {key} is missing from the config file')
 
+def time_shift(ds: xarray.Dataset, start_time: str, end_time: str) -> xarray.Dataset:
+    """
+    Applies a 24-hour time shift to the forcing variables and slices the dataset
+    to the specified range.
+
+    Args:
+        ds (xarray.Dataset): Input dataset.
+        start_time (str): ISO start time (e.g., "1988-02-01").
+        end_time (str): ISO end time (e.g., "1988-02-03").
+
+    Returns:
+        xarray.Dataset: Time-shifted and sliced dataset.
+    """
+    # Apply 24h shift to selected variables
+    data_shift = (
+        ds.pipe(
+            xarray_utils.selective_temporal_shift,
+            variables=model.forcing_variables,
+            time_shift='24 hours',
+        )
+        .sel(time=slice(start_time, end_time))  # Remove the 3rd argument
+        .compute()
+    )
+    return data_shift
+
 args = parse_arguments()
 config = read_config(args.config)
 validate_config(config)
@@ -40,6 +66,24 @@ print("data_inner_steps", data_inner_steps)
 print("inner_steps", inner_steps)
 print("rng_key", rng_key)
 
+start_date = datetime.strptime(start_time, '%Y-%m-%d') + timedelta(days=1)
+print("start_date", start_date)
+
+end_date = datetime.strptime(end_time, '%Y-%m-%d')
+print("end_date", end_date)
+
+
+days_to_run = (end_date - start_date).days
+print("days_to_run", days_to_run)
+
+outer_steps = days_to_run * 24 // inner_steps
+print("outer_steps", outer_steps)
+
+timedelta = np.timedelta64(1, 'h') * inner_steps
+print("timedelta", timedelta)
+
+times = (np.arange(outer_steps) * inner_steps)  # time axis in hours
+print("times", times)
 
 with open(model_checkpoint, 'rb') as f:
   ckpt = pickle.load(f)
@@ -50,13 +94,19 @@ print("model", model)
 
 data_original = xarray.open_zarr(INI_DATA_PATH, chunks=None)
 
+print("data_original", data_original)
+
+data_shift = time_shift(data_original, start_time, end_time)
+
+print("data_shift", data_shift)
+
 # Flip latitude and longitude coordinates, to match ERA5 ???
 
 data_grid = spherical_harmonic.Grid(
-    latitude_nodes=data_original.sizes['latitude'],
-    longitude_nodes=data_original.sizes['longitude'],
-    latitude_spacing=xarray_utils.infer_latitude_spacing(data_original.latitude),
-    longitude_offset=xarray_utils.infer_longitude_offset(data_original.longitude),
+    latitude_nodes=data_shift.sizes['latitude'],
+    longitude_nodes=data_shift.sizes['longitude'],
+    latitude_spacing=xarray_utils.infer_latitude_spacing(data_shift.latitude),
+    longitude_offset=xarray_utils.infer_longitude_offset(data_shift.longitude),
 )
 
 # Other available regridders include BilinearRegridder and NearestRegridder.
@@ -64,9 +114,40 @@ regridder = horizontal_interpolation.ConservativeRegridder(
     data_grid, model.data_coords.horizontal, skipna=True
 )
 
-regridded = xarray_utils.regrid(data_original, regridder)
+#data_sliced = data_shift.sel(time=start_date).compute()
+
+data_sliced = data_shift
+
+regridded = xarray_utils.regrid(data_sliced, regridder)
 
 data = xarray_utils.fill_nan_with_nearest(regridded)
+
+# Define calendar and new reference date matching era 5
+calendar = "proleptic_gregorian"
+new_reference = cftime.DatetimeProlepticGregorian(1900, 1, 1)
+
+# Reconstruct decoded times with the correct calendar
+year = data.time.dt.year
+month = data.time.dt.month
+day = data.time.dt.day
+decoded_times = [cftime.DatetimeProlepticGregorian(year, month, day) + np.timedelta64(i, 'D') for i in range(len(data.time))]
+
+# Compute new time values in hours since reference
+new_time_hours = np.array([(t - new_reference).total_seconds() / 3600 for t in decoded_times])
+#new_time_hours = np.array(
+#    [(t - new_reference).total_seconds() / 3600 for t in decoded_times],
+#    dtype='int64'
+#)
+
+# Replace the time coordinate with new values and update attributes
+data['time'] = ('time', new_time_hours)
+data['time'].attrs['units'] = "hours since 1900-01-01"
+data['time'].attrs['calendar'] = "proleptic_gregorian"
+# Ensure correct encoding (double without FillValue)
+data['time'].encoding.update({
+    "dtype": "float64",
+    "_FillValue": None  # Important: remove NaN fill value
+})
 
 # Save the regridded data to a new zarr file and a netcdf file
 path_to_save_zarr = f"{INI_DATA_PATH}/regridded"
@@ -97,12 +178,16 @@ print("Will run for", outer_steps, "steps")
 
 print("initialize model state")
 
+print("data at line 178", data)
+
 inputs = model.inputs_from_xarray(data.isel(time=0))
+print("inputs", inputs)
 input_forcings = model.forcings_from_xarray(data.isel(time=0))
+print("input_forcings", input_forcings)
 initial_state = model.encode(inputs, input_forcings, rng_key)
-
+print("initial_state", initial_state)
 all_forcings = model.forcings_from_xarray(data.head(time=1))
-
+print("all_forcings", all_forcings)
 
 print("make forecast")
 final_state, predictions = model.unroll(
@@ -153,7 +238,7 @@ try:
     predictions_ds.to_zarr(f"{output_path}/model_state-{start_time}-{end_time}-{rng_key}.zarr", mode="w")
 except Exception as e:
     print("Error saving to zarr:", e)
-   
+
 
 
 
@@ -162,4 +247,3 @@ except Exception as e:
 # Visualize ERA5 vs NeuralGCM trajectories
 # combined_ds.specific_humidity.sel(level=850).plot(
 #    x='longitude', y='latitude', row='time', col='model', robust=True, aspect=2, size=2
-#);

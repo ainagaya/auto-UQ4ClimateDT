@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import xarray as xr
 from gsv.retriever import GSVRetriever
+# from dinosaur import xarray_utils
 
 
 def parse_args():
@@ -49,16 +50,36 @@ def fix_sst(data):
     return data
 
 def estimate_ciwc_approximate(liquid_profile: xr.DataArray, total_ice: xr.DataArray) -> xr.DataArray:
+    # Ensure input data is float32
+    liquid_profile = liquid_profile.astype("float32")
+    total_ice = total_ice.astype("float32")
+
+    # Fill missing liquid with 0.0 (float32)
+    liquid_profile = liquid_profile.fillna(np.float32(0.0))
+
+    # Compute vertical sum safely
     vertical_sum = liquid_profile.sum(dim="level")
-    vertical_fraction = liquid_profile / vertical_sum.where(vertical_sum != 0, np.nan)
+
+    # Only divide where the sum is safe, otherwise set NaN
+    vertical_sum_safe = xr.where(vertical_sum > np.float32(1e-6), vertical_sum, np.nan)
+    vertical_fraction = liquid_profile / vertical_sum_safe
+
+    # Now compute the specific ice
     specific_ice = total_ice * vertical_fraction
-    return specific_ice.fillna(0)
+
+    # Fill remaining NaNs (from bad divisions) with 0.0 (float32)
+    specific_ice = specific_ice.fillna(np.float32(0.0))
+
+    # Remove any tiny negatives just in case
+    specific_ice = specific_ice.clip(min=np.float32(0.0))
+
+    return specific_ice / 400
 
 def estimate_ciwc_constant(total_ice: xr.DataArray, level_dim: int) -> xr.DataArray:
     levels = np.arange(level_dim)
     return (total_ice / level_dim).expand_dims({"level": levels}).transpose("level", ...)
 
-def interpolate_data(data, levels, method="constant"):
+def interpolate_data(data, levels, clwc_store, method="approximate"):
     """
     Interpolate or generate `specific_cloud_ice_water_content` (ciwc)
     from 2D data or interpolate 3D data to target levels.
@@ -76,17 +97,19 @@ def interpolate_data(data, levels, method="constant"):
 
     if "level" not in data.dims:
         logging.info("Adding level dimension to variable tciw")
-        twod_data = data["tciw"]  # 2D: (time, lat, lon)
-        time_dim, lat_dim, lon_dim = twod_data.shape
-        new_shape = (time_dim, len(levels), lat_dim, lon_dim)
+        twod_data = data["tciw"]
+        print(twod_data.shape)
+        time_dim, lon_dim, lat_dim = twod_data.shape
+        new_shape = (time_dim, lon_dim, lat_dim, len(levels))
 
         if method == "approximate":
             threed_data = np.zeros(new_shape, dtype=np.float64)
             for t in range(time_dim):
                 threed_data[t] = estimate_ciwc_approximate(
-                    liquid_profile=data["clwc"][t],  # 3D: (level, lat, lon)
+                    liquid_profile=clwc_store[t],  # 3D: (level, lat, lon)
                     total_ice=data["tciw"][t]       # 2D: (lat, lon)
                 ).values
+                print(threed_data)
         elif method == "constant":
             threed_data = np.zeros(new_shape, dtype=np.float64)
             for t in range(time_dim):
@@ -96,8 +119,10 @@ def interpolate_data(data, levels, method="constant"):
         else:
             raise ValueError(f"Unknown method '{method}'")
 
+        print("data", data)
+        print("lat", data["lat"])
         ds_new = xr.Dataset({
-            "specific_cloud_ice_water_content": (("time", "level", "lat", "lon"), threed_data)
+            "specific_cloud_ice_water_content": (("time", "lat", "lon", "level"), threed_data)
         }, coords={
             "time": data["time"],
             "level": levels,
@@ -108,6 +133,10 @@ def interpolate_data(data, levels, method="constant"):
             "units": "kg/kg",
             "long_name": "specific_cloud_ice_water_content"
         }
+        ds_new["specific_cloud_ice_water_content"] = ds_new["specific_cloud_ice_water_content"].chunk(
+            {"level": 37, "lat": 180, "lon": 360})
+
+        print(ds_new)
 
     else:
         ds_new = data.interp(level=levels)
@@ -130,12 +159,35 @@ def rename_variables(data, translator_file=None):
                 data_copy = data_copy.rename({renamed_name: translated_name})
     return data_copy
 
+def build_iso_time(date, time) -> str:
+    """
+    Build an ISO 8601 datetime string from MARS-style date and time.
+    Supports int or list input.
+
+    Args:
+        date (int or list): Date in YYYYMMDD format.
+        time (int or list): Time in HHMM format.
+
+    Returns:
+        str: ISO 8601 datetime string (e.g., '1998-01-01T00:00')
+    """
+    if isinstance(date, list):
+        date = date[0]
+    if isinstance(time, list):
+        time = time[0]
+
+    date_str = str(date)
+    time_str = f"{int(time):04d}"  # ensures 4-digit zero-padded string
+
+    return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}T{time_str[:2]}:{time_str[2:]}"
+
 
 def process_requests(requests_path, output_path, translator_path=None):
     """Process GSV data requests."""
     gsv = GSVRetriever()
     merged_dataset = xr.Dataset()
     translator_file = None
+    clwc_store = []
 
     if translator_path and os.path.exists(translator_path):
         translator_file = load_request(translator_path)
@@ -145,19 +197,29 @@ def process_requests(requests_path, output_path, translator_path=None):
         request = load_request(os.path.join(requests_path, request_file))
         mars_keys = request["mars-keys"]
         data = retrieve_data(gsv, mars_keys)
+
+        # mars_keys.date = 19980101
+        # mars_keys.time = 0000
+        start_time = build_iso_time(mars_keys["date"], mars_keys["time"])
+        end_time = start_time
+
         save_data(data, output_path, f"raw-{count}.nc")
 
         if "levelist_interpol" in request:
             levels = request["levelist_interpol"]
-            data = interpolate_data(data, levels)
+            data = interpolate_data(data, levels, clwc_store, method="approximate")
+
+        if "clwc" in data:
+            clwc_store = data["clwc"]
 
         data = rename_variables(data, translator_file)
-        data = fix_sst(data)
+        # data = fix_sst(data)
+        #data = time_shift_and_slice(data, start_time, end_time)
         save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
         merged_dataset = xr.merge([merged_dataset, data], compat="override")
 
     # transpose the merged dataset
-    merged_dataset = merged_dataset.transpose("time", "longitude", "latitude", "level")
+    merged_dataset = merged_dataset.transpose("time", "level",  "latitude", "longitude")
     merged_dataset.to_zarr(output_path)
 
 
