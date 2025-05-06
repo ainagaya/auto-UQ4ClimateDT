@@ -24,11 +24,11 @@ def main():
 
     logging.basicConfig(level=logging.DEBUG)
     ds = process_requests(args.requests, args.output, args.translator, args.postprocess)
-    if args.output_format == "netcdf":
+    if args.input_format == "netcdf":
         save_data_netcdf(ds, args.output, "merged.nc")
-    elif args.output_format == "zarr":
+    elif args.input_format == "zarr":
         ds.to_zarr(args.output)
-    elif args.output_format == "grib":
+    elif args.input_format == "grib":
         save_data_grib(ds, args.output, "merged.grib")
 
 
