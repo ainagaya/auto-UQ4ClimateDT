@@ -19,6 +19,8 @@ GSV_CONTAINER=%GSV.CONTAINER%
 FDB_HOME=%DIRS.FDB_PATH%
 SIF_PATH=/gpfs/scratch/ehpc204/bsc032376/neuralgcm_bsc_v1.0.sif
 
+INPUT_FORMAT=%MODEL.INPUT_FORMAT%
+
 # Derived paths
 JOBNAME_WITHOUT_EXPID=$(echo ${JOBNAME} | sed 's/^[^_]*_//')
 LOGS_DIR=${HPCROOTDIR}/LOG_${EXPID}
@@ -42,7 +44,7 @@ if [ "$create_ics" = "false" ]; then
     echo "ICs already exist for this chunk at $DATA_PATH. Skipping."
 else
     if [ "$IC_SOURCE" = "fdb" ]; then
-        prepare_ics_fdb $HPCROOTDIR $FDB_HOME $REQUESTS_DIR $CHUNK_START_DATE $DATA_PATH $GSV_CONTAINER $CHUNK_END_DATE $MODEL_NAME
+        prepare_ics_fdb $HPCROOTDIR $FDB_HOME $REQUESTS_DIR $CHUNK_START_DATE $DATA_PATH $GSV_CONTAINER $CHUNK_END_DATE $MODEL_NAME $INPUT_FORMAT
     elif [ "$IC_SOURCE" = "era5" ]; then
         prepare_ics_era5 $HPCROOTDIR $LOGS_DIR $CONFIGFILE $SIF_PATH
     else

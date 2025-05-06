@@ -7,6 +7,7 @@ VARIABLES:
   TARGETGRID: "N320"
 MODEL:
   DELAY: 6
+  INPUT_FORMAT: "grib"
   CHECKPOINT: "/gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/inference-aifs-0.2.1-anemoi.ckpt"
 JOBS:
   SIM:

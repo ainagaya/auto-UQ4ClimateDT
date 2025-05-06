@@ -7,6 +7,7 @@ VARIABLES:
   TARGETGRID: "N320" # Horizontal regridding to a Gaussian grid. For processing fine-resolution data conservative regridding is most appropriate
 MODEL:
   #@param ['v1/deterministic_0_7_deg.pkl', 'v1/deterministic_1_4_deg.pkl', 'v1/deterministic_2_8_deg.pkl', 'v1/stochastic_1_4_deg.pkl', 'v1_precip/stochastic_precip_2_8_deg.pkl', 'v1_precip/stochastic_evap_2_8_deg'] {type: "string"}
+  INPUT_FORMAT: "zarr" # Input format for the model
   CHECKPOINT: "/gpfs/scratch/bsc32/bsc032376/tfm/deterministic_2_8_deg.pkl"
 JOBS:
   SIM:

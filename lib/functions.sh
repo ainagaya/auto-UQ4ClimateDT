@@ -161,6 +161,7 @@ prepare_ics_fdb() {
     local gsv_container="$6"
     local end_date="$7"
     local model="$8"
+    local format="$9"
 
     mkdir -p "$requests_dir"
     mkdir -p "$data_path"
@@ -182,7 +183,8 @@ prepare_ics_fdb() {
         bash -c "python3 $hpc_rootdir/runscripts/retrieve.py \
         --requests $requests_dir \
         --output $data_path \
-        --translator $hpc_rootdir/conf/models/neuralgcm/translator.yaml"
+        --translator $hpc_rootdir/conf/models/$model/translator.yaml \
+        --input-format $format"
 }
 
 # Function to prepare ICs from ERA5 source
