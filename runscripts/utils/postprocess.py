@@ -16,4 +16,5 @@ def fix_sst(data):
     if "sea_surface_temperature" in data.variables:
         sst = data["sea_surface_temperature"]
         sst.attrs["units"] = "K"
-        sst.values +
+        sst.values += 273.15
+    return data
