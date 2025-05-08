@@ -6,6 +6,8 @@ from utils.core import load_request, retrieve_data, save_data_netcdf, build_iso_
 from utils.interpolate import interpolate_data
 from utils.postprocess import rename_variables
 
+import pyfdb
+
 def process_requests(requests_path, output_path, translator_path=None, do_postprocessing=True):
     gsv = GSVRetriever()
     merged_dataset = xr.Dataset()
@@ -45,3 +47,16 @@ def process_requests(requests_path, output_path, translator_path=None, do_postpr
         merged_dataset.to_zarr(output_path)
 
     return merged_dataset
+
+def process_requests_grib(requests_path, output_path, translator_path=None, do_postprocessing=True):
+    fdb = pyfdb.FDB()
+
+    for count, request_file in enumerate(os.listdir(requests_path)):
+        logging.info(f"Processing request {request_file}")
+        request = load_request(os.path.join(requests_path, request_file))
+        mars_keys = request["mars-keys"]
+        datareader = fdb.retrieve(request)
+
+        # no es poden ajuntar els datasets
+
+    return
