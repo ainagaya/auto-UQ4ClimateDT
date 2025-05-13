@@ -9,6 +9,8 @@ MODEL:
   #@param ['v1/deterministic_0_7_deg.pkl', 'v1/deterministic_1_4_deg.pkl', 'v1/deterministic_2_8_deg.pkl', 'v1/stochastic_1_4_deg.pkl', 'v1_precip/stochastic_precip_2_8_deg.pkl', 'v1_precip/stochastic_evap_2_8_deg'] {type: "string"}
   CHECKPOINT: "/gpfs/scratch/bsc32/bsc032376/tfm/deterministic_2_8_deg.pkl"
 JOBS:
+  PREPARE_ICS:
+    FILE: templates/prepare_ics_ngcm.sh
   SIM:
     FILE: templates/sim_neuralgcm.sh,templates/config_neuralgcm.yml
     PLATFORM: "MARENOSTRUM5ACC"

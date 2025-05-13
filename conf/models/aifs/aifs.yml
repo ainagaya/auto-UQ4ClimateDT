@@ -9,6 +9,9 @@ MODEL:
   DELAY: 6
   CHECKPOINT: "/gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/inference-aifs-0.2.1-anemoi.ckpt"
 JOBS:
+  JOBS:
+    PREPARE_ICS:
+      FILE: templates/prepare_ics_fdb.sh
   SIM:
     FILE: templates/sim.sh
     PLATFORM: "MARENOSTRUM5ACC"
