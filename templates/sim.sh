@@ -37,6 +37,9 @@ EXPVER=%REQUEST.EXPVER%
 TYPE=%REQUEST.TYPE%
 STREAM=%REQUEST.STREAM%
 
+MEMBER=%MEMBER%
+HPCROOTDIR=%HPCROOTDIR%
+
 TIME1=%CHUNK_START_HOUR%
 DELAY=%MODEL.DELAY%
 TIME2=$(( TIME1 + DELAY ))
@@ -76,14 +79,25 @@ function conda_init() {
 
 }
 
+# coma oberta?
+perturb_ics() {
+    param="$1"
+    member="$2"
+    python3 "${HPCROOTDIR}/runscripts/perturb_var.py" \
+        --input "${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1" \
+        --output "${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/${MEMBER}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1" \
+        --shortname ${param} \
+        --seed ${member}
+}
+
 conda_init
 #conda activate ai-models
 conda activate /gpfs/projects/bsc32/ml_models/emulator_models/ecmwf_ai_models/wf_emulator_snake_2
 #conda activate /gpfs/scratch/bsc32/bsc032376/climate-emulators/env/wf_emulator_snake_2
 module use /gpfs/projects/bsc32/software/rhel/9.2/modules/all
 module load CDO
-mkdir -p $OUTDIR
-cd $OUTDIR
+mkdir -p $OUTDIR/${MEMBER}
+cd $OUTDIR/${MEMBER}
 
 TARGETGRID=N320
 
@@ -93,12 +107,15 @@ else
     AI_MODEL_RUN=${AI_MODEL}
 fi
 
+
+#perturb_ics "t" "${MEMBER}"
+
 LEAD_TIME=$(( $RUN_DAYS * 24 ))
 
 if [ ${INPUT_TYPE,,} == "fdb" ]; then
     ai-models --debug --input file --output file \
-    --file ${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1 \
-    --path ${OUTDIR}/${AI_MODEL}-${START_DATE:0:8}-${START_TIME}.grib --time 0600 \
+    --file ${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/${MEMBER}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1 \
+    --path ${OUTDIR}/${MEMBER}/${AI_MODEL}-${START_DATE:0:8}-${START_TIME}.grib --time 0600 \
     --lead-time ${LEAD_TIME} anemoi --checkpoint ${AI_CHECKPOINT}
 elif [ ${INPUT_TYPE,,} == "era5_grib" ]; then
     file_format=grib
