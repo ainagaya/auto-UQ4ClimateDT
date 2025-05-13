@@ -213,7 +213,7 @@ def process_requests(requests_path, output_path, translator_path=None):
             clwc_store = data["clwc"]
 
         data = rename_variables(data, translator_file)
-        # data = fix_sst(data)
+        data = fix_sst(data)
         #data = time_shift_and_slice(data, start_time, end_time)
         save_data(data, os.path.join(output_path, ".."), f"interpol-{count}.nc")
         merged_dataset = xr.merge([merged_dataset, data], compat="override")
