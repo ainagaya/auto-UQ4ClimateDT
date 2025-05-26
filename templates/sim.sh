@@ -13,7 +13,7 @@ OUTDIR=%DIRS.OUTPUT_DIR%
 # Request keys
 LEVTYPE=%REQUEST.LEVTYPE%
 
-AI_MODEL=%AI_MODEL%
+AI_MODEL=%MODEL.NAME%
 AI_CHECKPOINT=%MODEL.CHECKPOINT%
 INPUT_TYPE=%MODEL.ICS%
 
@@ -36,6 +36,9 @@ RESOLUTION=%REQUEST.RESOLUTION%
 EXPVER=%REQUEST.EXPVER%
 TYPE=%REQUEST.TYPE%
 STREAM=%REQUEST.STREAM%
+
+MEMBER=%MEMBER%
+HPCROOTDIR=%HPCROOTDIR%
 
 TIME1=%CHUNK_START_HOUR%
 DELAY=%MODEL.DELAY%
@@ -76,6 +79,7 @@ function conda_init() {
 
 }
 
+
 conda_init
 #conda activate ai-models
 conda activate /gpfs/projects/bsc32/ml_models/emulator_models/ecmwf_ai_models/wf_emulator_snake_2
@@ -93,12 +97,15 @@ else
     AI_MODEL_RUN=${AI_MODEL}
 fi
 
+
+#perturb_ics "t" "${MEMBER}"
+
 LEAD_TIME=$(( $RUN_DAYS * 24 ))
 
 if [ ${INPUT_TYPE,,} == "fdb" ]; then
     ai-models --debug --input file --output file \
     --file ${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1 \
-    --path ${OUTDIR}/${AI_MODEL}-${START_DATE:0:8}-${START_TIME}.grib --time 0600 \
+    --path ${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}.grib --time 0600 \
     --lead-time ${LEAD_TIME} anemoi --checkpoint ${AI_CHECKPOINT}
 elif [ ${INPUT_TYPE,,} == "era5_grib" ]; then
     file_format=grib
@@ -110,6 +117,13 @@ else
     export PATH=/gpfs/projects/ehpc01/dte/bin:$PATH
     ai-models --input cds --date ${START_DATE} --time ${TIME} ${AI_MODEL} --checkpoint ${AI_CHECKPOINT}
 fi
+
+# transform to netcdf
+module load CDO/2.4.4-gompi-2023b
+cdo -f nc copy ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}.grib ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}.nc
+
+cdo setgridtype,regular ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}.grib ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}_reg_gauss.grib
+cdo remapbil,r1440x721 ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}_reg_gauss.grib ${OUTDIR}/${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}_regular.nc
 
 #ai-models --input file --file /gpfs/projects/bsc32/ml_models/emulator_models/aifs/inference_files/example-input-aifs021.grib \
 # --output file --time 0600 --date 20240808 --path test_output.grib --lead-time 360 anemoi \
