@@ -52,11 +52,13 @@ validate_config(config)
 
 logging.info(f"Config loaded with start_time: {start_time}, end_time: {end_time}")
 
-start_date = datetime.strptime(start_time, '%Y-%m-%d') + timedelta(days=1)
-input_end_date = datetime.strptime(start_time, '%Y-%m-%d') + timedelta(days=2)
+#start_date = datetime.strptime(start_time, '%Y-%m-%d') + timedelta(days=1)
+start_date = datetime.strptime(start_time, '%Y-%m-%d')
+# input_end_date = datetime.strptime(start_time, '%Y-%m-%d') + timedelta(days=2)
+input_end_date = datetime.strptime(start_time, '%Y-%m-%d') + timedelta(days=1)
 end_date = datetime.strptime(end_time, '%Y-%m-%d')
 
-days_to_run = (end_date - start_date).days
+days_to_run = (end_date - start_date).days + 1
 outer_steps = days_to_run * 24 // inner_steps
 delta_t = np.timedelta64(inner_steps, 'h')
 times = np.arange(outer_steps) * inner_steps  # in hours
@@ -86,27 +88,27 @@ regridded = xarray_utils.regrid(data_shift, regridder)
 data = xarray_utils.fill_nan_with_nearest(regridded)
 
 # Convert time coordinates
-calendar = "proleptic_gregorian"
-new_reference = cftime.DatetimeProlepticGregorian(1900, 1, 1)
+# calendar = "proleptic_gregorian"
+# new_reference = cftime.DatetimeProlepticGregorian(1900, 1, 1)
 
-decoded_times = [
-    cftime.DatetimeProlepticGregorian(
-        int(y), int(m), int(d)
-    ) for y, m, d in zip(data.time.dt.year.values, data.time.dt.month.values, data.time.dt.day.values)
-]
-new_time_hours = np.array([
-    (t - new_reference).total_seconds() / 3600 for t in decoded_times
-])
+# decoded_times = [
+#     cftime.DatetimeProlepticGregorian(
+#         int(y), int(m), int(d)
+#     ) for y, m, d in zip(data.time.dt.year.values, data.time.dt.month.values, data.time.dt.day.values)
+# ]
+# new_time_hours = np.array([
+#     (t - new_reference).total_seconds() / 3600 for t in decoded_times
+# ])
 
-data['time'] = ('time', new_time_hours)
-data['time'].attrs.update({
-    'units': 'hours since 1900-01-01',
-    'calendar': calendar
-})
-data['time'].encoding.update({
-    'dtype': 'float64',
-    '_FillValue': None
-})
+# data['time'] = ('time', new_time_hours)
+# data['time'].attrs.update({
+#     'units': 'hours since 1900-01-01',
+#     'calendar': calendar
+# })
+# data['time'].encoding.update({
+#     'dtype': 'float64',
+#     '_FillValue': None
+# })
 
 # Save regridded data
 data.to_zarr(f"{INI_DATA_PATH}/regridded", mode="w")
@@ -129,6 +131,7 @@ final_state, predictions = model.unroll(
 
 # Convert predictions to xarray
 predictions_ds = model.data_to_xarray(predictions, times=times)
+# predictions_ds = model.data_to_xarray(predictions)
 
 # Ensure output path exists
 os.makedirs(output_path, exist_ok=True)
