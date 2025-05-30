@@ -11,8 +11,8 @@ JOBS:
     RUNNING: CHUNK
     NODES: 1
     PROCESSORS: 80
-  POSTPROC:
-    FILE: templates/postproc_neuralgcm.sh,templates/config_neuralgcm.yml
-    PLATFORM: "MARENOSTRUM5-LOGIN"
-    DEPENDENCIES: SIM
-    RUNNING: DATE
+      #  POSTPROC:
+      # FILE: templates/postproc_neuralgcm.sh,templates/config_neuralgcm.yml
+      #PLATFORM: "MARENOSTRUM5-LOGIN"
+      #DEPENDENCIES: SIM
+      #RUNNING: DATE
