@@ -6,7 +6,9 @@ HPCROOTDIR=%HPCROOTDIR%
 EXPID=%DEFAULT.EXPID%
 JOBNAME=%JOBNAME%
 
-SIF_PATH=/gpfs/scratch/ehpc204/bsc032376/neuralgcm_bsc_v1.0.sif
+# TODO: Make it configurable
+# SIF_PATH=/gpfs/scratch/ehpc204/bsc032376/neuralgcm_bsc_v1.0.sif
+SIF_PATH=/gpfs/scratch/bsc32/bsc032376/neuralgcm_bsc_v1.0.sif
 
 JOBNAME_WITHOUT_EXPID=$(echo ${JOBNAME} | sed 's/^[^_]*_//')
 
