@@ -106,6 +106,7 @@ if [ ${INPUT_TYPE,,} == "fdb" ]; then
     ai-models --debug --input file --output file \
     --file ${INPDIR}/${ACTIVITY}_${EXPERIMENT}_${YYYY}/aifs-climate-dt-${ACTIVITY}-${EXPERIMENT}-${START_DATE}-${TIME1}-${TIME2}.grib1 \
     --path ${AI_MODEL}-${START_DATE}_${END_DATE}_${MEMBER}.grib --time 0600 \
+    --path ${OUTDIR}/${AI_MODEL_RUN}-${START_DATE:0:8}-${START_TIME}.grib --time 0600 \
     --lead-time ${LEAD_TIME} anemoi --checkpoint ${AI_CHECKPOINT}
 elif [ ${INPUT_TYPE,,} == "era5_grib" ]; then
     file_format=grib
