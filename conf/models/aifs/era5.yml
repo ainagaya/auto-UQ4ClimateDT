@@ -1,0 +1,3 @@
+JOBS:
+  PREPARE_ICS:
+    FILE: templates/prepare_ics_ERA5.sh
